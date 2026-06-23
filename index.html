@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your Place | متجرك الإلكتروني</title>
+<title>Your Place | متجرك</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 <style>
-body{font-family:'Cairo';margin:0;background:#f5f5f5}
-header{background:#007bff;color:white;padding:20px;text-align:center}
-.container{max-width:1000px;margin:20px auto;padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
-.product{background:white;padding:15px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);text-align:center}
-.product img{width:100%;height:200px;object-fit:cover;border-radius:8px}
-.product h3{margin:10px 0}
-.price{color:#007bff;font-size:20px;font-weight:bold}
-button{background:#28a745;color:white;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;width:100%;font-size:16px}
-button:hover{background:#218838}
-.cart{position:fixed;top:20px;left:20px;background:#ffc107;padding:10px 20px;border-radius:50px;cursor:pointer;font-weight:bold}
-#cartBox{display:none;position:fixed;top:70px;left:20px;background:white;padding:20px;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,0.2);width:300px}
+body{font-family:'Cairo';margin:0;background:#f8f9fa}
+header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:30px;text-align:center}
+.container{max-width:1100px;margin:30px auto;padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:25px}
+.product{background:white;padding:20px;border-radius:15px;box-shadow:0 5px 15px rgba(0,0,0,0.1);text-align:center;transition:0.3s}
+.product:hover{transform:translateY(-5px)}
+.product img{width:100%;height:220px;object-fit:cover;border-radius:12px}
+.price{color:#667eea;font-size:24px;font-weight:bold;margin:10px 0}
+button{background:#667eea;color:white;border:none;padding:12px 25px;border-radius:8px;cursor:pointer;width:100%;font-size:16px;font-weight:bold}
+button:hover{background:#5568d3}
+.cart{position:fixed;top:20px;left:20px;background:#ff6b6b;color:white;padding:12px 25px;border-radius:50px;cursor:pointer;font-weight:bold;z-index:999}
+#cartBox{display:none;position:fixed;top:70px;left:20px;background:white;padding:20px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,0.3);width:320px;z-index:999}
 </style>
 </head>
 <body>
@@ -30,21 +30,21 @@ button:hover{background:#218838}
 
 <div class="container">
   <div class="product">
-    <img src="https://via.placeholder.com/250x200/007bff/fff?text=منتج+1">
+    <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400">
     <h3>سماعة لاسلكية</h3>
     <p class="price">350 جنيه</p>
     <button onclick="addToCart('سماعة لاسلكية',350)">أضف للسلة</button>
   </div>
   
   <div class="product">
-    <img src="https://via.placeholder.com/250x200/28a745/fff?text=منتج+2">
+    <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400">
     <h3>ساعة ذكية</h3>
     <p class="price">800 جنيه</p>
     <button onclick="addToCart('ساعة ذكية',800)">أضف للسلة</button>
   </div>
   
   <div class="product">
-    <img src="https://via.placeholder.com/250x200/dc3545/fff?text=منتج+3">
+    <img src="https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=400">
     <h3>باور بانك</h3>
     <p class="price">250 جنيه</p>
     <button onclick="addToCart('باور بانك',250)">أضف للسلة</button>
@@ -63,7 +63,7 @@ function toggleCart(){
   box.style.display=box.style.display=='block'?'none':'block';
   let items=document.getElementById('cartItems');
   if(cart.length==0){items.innerHTML='فاضية'}
-  else{items.innerHTML=cart.map(p=>p.name+' - '+p.price+' جنيه').join('<br>')}
+  else{items.innerHTML=cart.map(p=>p.name+' - '+p.price+' جنيه').join('<br><br>')}
 }
 </script>
 </body>
