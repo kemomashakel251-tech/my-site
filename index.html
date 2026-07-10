@@ -113,12 +113,12 @@ nav a{padding:8px 12px;font-size:14px}
 <div id="toast"></div>
 <a id="waFloat" class="float" target="_blank">💬</a>
 
-<header id="adminHeader" style="display:none">
+<header>
   <div class="container" style="display:flex;justify-content:space-between;align-items:center;width:100%;padding:0">
     <h2 id="sName">JOPA 🔥</h2>
     <nav>
       <button class="btn small gray" onclick="toggleLang()" id="langBtn" style="margin:0; font-size:13px">EN</button>
-      <span id="menu" style="display:flex; gap:8px">
+      <span id="menu" style="display:none; gap:8px">
         <a onclick="go('store')" data-key="nav_store">المتجر</a>
         <a onclick="go('products')" data-key="nav_products">المنتجات</a>
         <a onclick="go('orders')" data-key="nav_orders">الطلبات</a>
@@ -359,7 +359,8 @@ let ADMIN=JSON.parse(localStorage.adm||'{"u":"admin","p":"1234"}');
 let SET=JSON.parse(localStorage.set||'{"name":"JOPA Store","wa":"2010","theme":"#ff6600","gov":[{"n":"القاهرة","v":50},{"n":"سوهاج","v":60}],"cpOn":false,"cpCode":"SALE50","cpVal":10,"skipCart":false,"clientNote":"","fakeCounterOn":false,"fakeCounterNum":15,"countDownOn":false,"countDownHours":2,"countDownMins":30,"countDownText":"ينتهي العرض خلال"}');
 
 // هيكلية المنتجات الافتراضية تدعم الآن مصفوفة ميديا (media)
-let PROD=[]; // هنجيبه من الفايربيز
+let PROD=[];
+try{ PROD = JSON.parse(localStorage.prod || '[]'); }catch(e){ PROD=[]; }
 for(let i=0;i<PROD.length;i++){
   let p = PROD[i];
   if(p.bulk_qty==undefined) p.bulk_qty=5;
@@ -442,11 +443,6 @@ function toggleLang(){
 function toast(t){let e=document.getElementById('toast');e.innerText=t;e.style.display='block';setTimeout(()=>e.style.display='none',2500)}
 
 function go(id){
-  // قفل: لو مش ادمن مينفعش يفتح غير المتجر والتشيك اوت
-  if(id != 'store' && id != 'checkout' && localStorage.getItem('isAdmin') !== 'true'){
-    return go('store');
-  }
-  
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
   document.getElementById(id).classList.add('on');
   window.scrollTo(0,0);
@@ -460,26 +456,12 @@ function go(id){
 function saveAll(){
   localStorage.adm=JSON.stringify(ADMIN);
   localStorage.set=JSON.stringify(SET);
-  // localStorage.prod اتشال عشان بقى فايربيز
-  localStorage.orders=JSON.stringify(ORD); 
-  saveProductsToCloud(); // هنحفظ في الفايربيز
+  localStorage.prod=JSON.stringify(PROD); 
+  localStorage.orders=JSON.stringify(ORD); // ده اهم سطر
 }
 
-function doLogin(){
-  if(u.value==ADMIN.u&&p.value==ADMIN.p){
-    localStorage.setItem('isAdmin','true');
-    document.getElementById('adminHeader').style.display='flex';
-    document.getElementById('menu').style.display='flex';
-    go('store')
-  }else{err.style.display='block'}
-}
-
-function logout(){
-  localStorage.removeItem('isAdmin');
-  document.getElementById('adminHeader').style.display='none';
-  document.getElementById('menu').style.display='none';
-  go('store')
-}
+function doLogin(){if(u.value==ADMIN.u&&p.value==ADMIN.p){document.getElementById('menu').style.display='flex';go('store')}else{err.style.display='block'}}
+function logout(){document.getElementById('menu').style.display='none';go('login')}
 function doReset(){if(rCode.value=='JOPA-RESET'&&rU.value&&rP.value){ADMIN={u:rU.value,p:rP.value};saveAll();toast('OK');go('login')}else{alert('Error')}}
 
 function getPrice(p, qty=1){
@@ -1172,21 +1154,11 @@ function saveS(){
   if(stU.value&&stP.value)ADMIN={u:stU.value,p:stP.value};
   applyTheme(SET.theme);saveAll();sName.innerText=SET.name;toast('OK');drawS();
 }
+
 // Initial Run
 applyTheme(SET.theme);
 sName.innerText=SET.name;
 updateLangDOM();
-
-// لو عامل لوجين قبل كده يدخل ادمن
-if(localStorage.getItem('isAdmin') === 'true'){
-  document.getElementById('adminHeader').style.display='flex';
-  document.getElementById('menu').style.display='flex';
-  go('store');
-} else {
-  // العميل يدخل المتجر على طول
-  go('store');
-}
-
 drawP();
 function printAllOrders(){
   if(ORD.length === 0) return alert('مفيش طلبات للطباعة');
@@ -1245,18 +1217,19 @@ document.getElementById('searchOrder').addEventListener('input', drawO);
 let db; // 1. عرفناه جلوبال
 
 // كود Firebase للطلبات
-import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js").then(({initializeApp})=>{
-import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js").then(({getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc, setDoc})=>{
+import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js").then(({ initializeApp }) => {
+import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js").then(({ getFirestore, collection, addDoc, setDoc, doc, getDoc, onSnapshot, query, orderBy, serverTimestamp }) => {
 
-  const app = initializeApp({
-    apiKey: "AIzaSyDKoD1yOQJkD6P0LQJkD6P0LQJkD6P0LQJkD6",
-    authDomain: "jopa-ff3d4.firebaseapp.com",
-    projectId: "jopa-ff3d4",
-    storageBucket: "jopa-ff3d4.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abcdef123456"
-  });
-  db = getFirestore(app); // 2. هنا بس
+const app = initializeApp({
+  apiKey: "AIzaSyDW1_AUSDl5vyzH_l5SucrA4CISv2Sz8g",
+  authDomain: "jopa-ff3d4.firebaseapp.com",
+  projectId: "jopa-ff3d4",
+  storageBucket: "jopa-ff3d4.firebasestorage.app",
+  messagingSenderId: "481955111504",
+  appId: "1:481955111504:web:6920b1440453fb2da0e755"
+});
+
+db = getFirestore(app); // هنا بنعرف db
 
   // دالة حفظ الطلب
   window.saveOrderToCloud = async function(order){
@@ -1270,27 +1243,8 @@ import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js").then((
     drawO(); 
     if(document.getElementById('dashboard').classList.contains('on')) drawDashboard();
   });
-// 1. دالة حفظ المنتجات للفايربيز
-window.saveProductsToCloud = async function(){
-  await setDoc(doc(db, "settings", "products"), {list: PROD});
-}
 
-// 2. سحب المنتجات تلقائي من السحابة اول ما تفتح
-onSnapshot(doc(db, "settings", "products"), (snap) => {
-  if(snap.exists()){
-    PROD = snap.data().list || [];
-    drawP();
-    if(document.getElementById('store').classList.contains('on')) drawStore();
-    if(document.getElementById('dashboard').classList.contains('on')) drawDashboard();
-  }
-});
 })});
-  // كود فتح صفحة الادمن بعد ما الموقع يحمل
-window.addEventListener('load', function(){
-  if(window.location.hash === '#login'){ 
-    setTimeout(() => { go('login'); }, 200);
-  }
-});
 </script>
 </body>
 </html>
