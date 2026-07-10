@@ -1285,13 +1285,12 @@ onSnapshot(doc(db, "settings", "products"), (snap) => {
   }
 });
 })});
-  });
+  // كود فتح صفحة الادمن بعد ما الموقع يحمل
+window.addEventListener('load', function(){
+  if(window.location.hash === '#login'){ 
+    setTimeout(() => { go('login'); }, 200);
+  }
 });
-
-// كود فتح صفحة الادمن
-if(window.location.hash === '#login'){ 
-  go('login'); 
-}
 </script>
 </body>
 </html>
