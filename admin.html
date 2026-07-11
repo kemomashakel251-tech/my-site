@@ -235,7 +235,7 @@ nav a{padding:8px 12px;font-size:14px}
       </div>
       <div class="stat-card">
         <h3 data-key="net_profit">صافي الأرباح</h3>
-        <p id="statProfits" style="color:var(--green)">0 جنيه</p>
+        <p id="statProfProfits" style="color:var(--green)">0 جنيه</p>
       </div>
       <div class="stat-card">
         <h3 data-key="sold_qty">القطع المباعة</h3>
@@ -358,18 +358,8 @@ nav a{padding:8px 12px;font-size:14px}
 let ADMIN=JSON.parse(localStorage.adm||'{"u":"admin","p":"1234"}');
 let SET=JSON.parse(localStorage.set||'{"name":"JOPA Store","wa":"2010","theme":"#ff6600","gov":[{"n":"القاهرة","v":50},{"n":"سوهاج","v":60}],"cpOn":false,"cpCode":"SALE50","cpVal":10,"skipCart":false,"clientNote":"","fakeCounterOn":false,"fakeCounterNum":15,"countDownOn":false,"countDownHours":2,"countDownMins":30,"countDownText":"ينتهي العرض خلال"}');
 
-// هيكلية المنتجات الافتراضية تدعم الآن مصفوفة ميديا (media)
 let PROD=[];
-try{ PROD = JSON.parse(localStorage.prod || '[]'); }catch(e){ PROD=[]; }
-for(let i=0;i<PROD.length;i++){
-  let p = PROD[i];
-  if(p.bulk_qty==undefined) p.bulk_qty=5;
-  if(p.bulk_disc==undefined) p.bulk_disc=20;
-  if(p.bulk_on==undefined) p.bulk_on=0;
-}
-
 let ORD=[];
-try{ ORD = JSON.parse(localStorage.orders || '[]'); }catch(e){ ORD=[]; }
 let currentFilter = 'all';
 let CART={};let TMP_MEDIA=[];let LAST={};let CHK_OPTS={};let COUPON=0;
 let TMP_SZ=[];let TMP_CL=[];let TMP_CL_STOCK={};let TMP_SZ_STOCK={};
@@ -387,7 +377,7 @@ const i18n = {
     new_user_lbl: "اسم مستخدم جديد", new_pass_lbl: "كلمة مرور جديدة", coupon_settings: "إعدادات الكوبون", enable_coupon: "تفعيل الكوبونات", add_gov: "+ محافظة", save_changes: "حفظ التغييرات",
     checkout_title: "إتمام الطلب", shipping_info: "بيانات الشحن", apply_btn: "تطبيق", confirm_order: "تأكيد الطلب", cancel_btn: "إلغاء", count_lbl: "العدد",
     empty_cart: "السلة فارغة", item_out: "المنتج نفذ", added_cart: "تم الإضافة للسلة", max_stock: "المخزون الكلي المتاح فقط", select_size: "اختار مقاس لـ", select_color: "اختار لون لـ",
-    ordered_msg: "تم الطلب بنجاح", del_confirm_prod: "هل أنت متأكد من حذف هذا المنتج؟", del_confirm_ord: "هل أنت متأكد من حذف هذا الطلب الوهمي؟", order_no: "طلب رقم", total_lbl: "الإجمالي",
+    ordered_msg: "تم الطلب بنجاح", del_confirm_prod: "هل أنت متأكد من حذف هذا المنتج؟", del_confirm_ord: "هل أنت متأكد من حذف هذا الطلب؟", order_no: "طلب رقم", total_lbl: "الإجمالي",
     status_new: "جديد", status_ok: "تم التسليم", status_cancel: "ملغي", btn_delivery: "تم التسليم", btn_cancel: "إلغاء الطلب", btn_delete: "حذف", currency: "جنيه", pcs: "قطعة", no_orders: "لا يوجد طلبات حالياً",
     placeholder_name: "الاسم بالكامل", placeholder_phone: "رقم الموبايل", placeholder_address: "العنوان بالتفصيل", placeholder_coupon: "كود الكوبون", select_gov: "اختار المحافظة"
   },
@@ -402,7 +392,7 @@ const i18n = {
     new_user_lbl: "New Admin User", new_pass_lbl: "New Admin Password", coupon_settings: "Coupon Settings", enable_coupon: "Enable Coupon Usage", add_gov: "+ Governorate", save_changes: "Save Changes",
     checkout_title: "Checkout", shipping_info: "Shipping Information", apply_btn: "Apply", confirm_order: "Confirm Order", cancel_btn: "Cancel", count_lbl: "Count",
     empty_cart: "Cart is empty", item_out: "Out of stock", added_cart: "Added to cart", max_stock: "Available stock limit reached", select_size: "Select size for ", select_color: "Select color for ",
-    ordered_msg: "Order placed successfully", del_confirm_prod: "Are you sure you want to delete this product?", del_confirm_ord: "Are you sure you want to delete this fake order?", order_no: "Order ID", total_lbl: "Total",
+    ordered_msg: "Order placed successfully", del_confirm_prod: "Are you sure you want to delete this product?", del_confirm_ord: "Are you sure you want to delete this order?", order_no: "Order ID", total_lbl: "Total",
     status_new: "New", status_ok: "Delivered", status_cancel: "Cancelled", btn_delivery: "Deliver", btn_cancel: "Cancel", btn_delete: "Delete", currency: "EGP", pcs: "Pcs", no_orders: "No orders found",
     placeholder_name: "Full Name", placeholder_phone: "Mobile Number", placeholder_address: "Detailed Address", placeholder_coupon: "Coupon Code", select_gov: "Select Governorate"
   }
@@ -454,10 +444,8 @@ function go(id){
 }
 
 function saveAll(){
-  localStorage.adm=JSON.stringify(ADMIN);
-  localStorage.set=JSON.stringify(SET);
-  localStorage.prod=JSON.stringify(PROD); 
-  localStorage.orders=JSON.stringify(ORD); // ده اهم سطر
+  localStorage.adm = JSON.stringify(ADMIN);
+  localStorage.set = JSON.stringify(SET);
 }
 
 function doLogin(){if(u.value==ADMIN.u&&p.value==ADMIN.p){document.getElementById('menu').style.display='flex';go('store')}else{err.style.display='block'}}
@@ -472,7 +460,6 @@ function getPrice(p, qty=1){
   return price;
 }
 
-// دالة عرض المتجر مع دعامة البوم الميديا التفاعلي (صور وفيديوهات)
 function drawStore(){
   grid.innerHTML='';
   PROD.forEach((x, prodIdx)=>{
@@ -482,9 +469,8 @@ function drawStore(){
     let stockHtml = x.showStock && x.stock>0? `<div class="stock ${x.stock<5?'low':''}"> ${LANG=='ar'?'متبقي':'Remaining'} ${x.stock} ${i18n[LANG].pcs}</div>` : x.showStock && x.stock==0? `<div class="stock low">${LANG=='ar'?'نفذت الكمية':'Out of Stock'}</div>` : '';
     let btnDisabled = x.stock<=0? 'disabled' : '';
     let fakeBuyers = Math.floor(Math.random() * 20) + 5;
-let fakeStock = Math.floor(Math.random() * 50) + 1;
-let fakeCounterHtml = `<div style="color:red;font-size:12px;margin-top:5px">🔥 ${fakeBuyers} شخص اشتروا ده اليوم</div><div style="color:green;font-size:12px">متبقي ${fakeStock} قطعة</div>`;
-    // بناء الألبوم التفاعلي للمنتج
+    let fakeStock = Math.floor(Math.random() * 50) + 1;
+    let fakeCounterHtml = `<div style="color:red;font-size:12px;margin-top:5px">🔥 ${fakeBuyers} شخص اشتروا ده اليوم</div><div style="color:green;font-size:12px">متبقي ${fakeStock} قطعة</div>`;
 
     let mediaList = x.media || [];
     if(mediaList.length === 0) mediaList = [{type:'image', src:'https://via.placeholder.com/200'}];
@@ -510,25 +496,22 @@ let fakeCounterHtml = `<div style="color:red;font-size:12px;margin-top:5px">🔥
           ${navHtml}
         </div>
         <h4>${x.n}</h4>
-        <p>${x.d.substring(0,40)}...</p>
+        <p>${x.d ? x.d.substring(0,40) : ''}...</p>
         ${priceHtml}
         ${stockHtml}
         ${fakeCounterHtml}
-        <button class="btn" onclick="addC(${x.id})" ${btnDisabled}>${LANG=='ar'?'اضف للسلة':'Add to Cart'}</button>
+        <button class="btn" onclick="addC('${x.id}')" ${btnDisabled}>${LANG=='ar'?'اضف للسلة':'Add to Cart'}</button>
         ${x.bulk_on?`<div style="background:#fff3cd;color:#856404;padding:6px;border-radius:8px;font-size:12px;font-weight:700;margin:6px 0;text-align:center">🔥 اشتري ${x.bulk_qty} قطع ووفر ${x.bulk_disc}%</div>`:''}
       </div>`;
-    
   });
 }
 
-// دالة التحكم بتقليب الصور والفيديوهات في كرت المنتج
 function slideMedia(prodIdx, direction) {
   let container = document.getElementById(`mediaCont${prodIdx}`);
   let items = container.querySelectorAll(`.media-item-${prodIdx}`);
   let activeIdx = Array.from(items).findIndex(el => el.classList.contains('active'));
   
   items[activeIdx].classList.remove('active');
-  // إيقاف الفيديو مؤقتاً لو تم الانتقال لملف آخر
   if(items[activeIdx].tagName === 'VIDEO') items[activeIdx].pause();
 
   let nextIdx = activeIdx + direction;
@@ -566,11 +549,12 @@ function chgQty(id,d){
   if(newQ>p.stock)return toast(`${i18n.max_stock}: ${p.stock}`);
 
   CART[id]=newQ;
-  CHK_OPTS[id].q=CART[id];
+  if(CHK_OPTS[id]) CHK_OPTS[id].q=CART[id];
   updC();
 }
+
 function updC(){
-  let items=Object.keys(CART).map(id=>({id:+id,p:PROD.find(x=>x.id==+id),q:CART[id]}));
+  let items=Object.keys(CART).map(id=>({id:id,p:PROD.find(x=>x.id==id),q:CART[id]})).filter(x=>x.p);
   let total=items.reduce((a,b)=>a+b.q,0);
   cNum.innerText=total;cNum2.innerText=total;
   cItems.innerHTML=items.map(x=>{
@@ -583,14 +567,16 @@ function updC(){
       ${previewTag}
       <div style="flex:1"><b>${x.p.n}</b><br><span style="color:var(--muted)">${getPrice(x.p, x.q)} ${i18n.currency}</span></div>
       <div class="qty">
-        <button class="btn small gray" onclick="chgQty(${x.id},-1)">-</button>
+        <button class="btn small gray" onclick="chgQty('${x.id}',-1)">-</button>
         <b>${x.q}</b>
-        <button class="btn small gray" onclick="chgQty(${x.id},1)">+</button>
+        <button class="btn small gray" onclick="chgQty('${x.id}',1)">+</button>
       </div>
-      <button class="btn small red" onclick="delC(${x.id})">X</button>
+      <button class="btn small red" onclick="delC('${x.id}')">X</button>
     </div>`}).join('')||`<p style="text-align:center;color:var(--muted)">${i18n[LANG].empty_cart}</p>`;
 }
+
 function cartToggle(){cart.style.display=cart.style.display=='block'?'none':'block'}
+
 function toCheckout(){
   if(!Object.keys(CART).length)return alert('السلة فاضية');
 
@@ -598,7 +584,7 @@ function toCheckout(){
   let countDownHtml = SET.countDownOn? `<div style='background:#ffcc00;padding:10px;text-align:center;font-weight:bold;color:#000;margin-bottom:15px'>⏰ ${SET.countDownText} ${SET.countDownHours}:${SET.countDownMins}</div>` : '';
 
   checkList.innerHTML= noteHtml + countDownHtml + Object.keys(CART).map(id=>{
-    let p=PROD.find(x=>x.id==+id);
+    let p=PROD.find(x=>x.id==id);
     if(!p) return '';
     if(!CHK_OPTS[id])CHK_OPTS[id]={q:CART[id],sizes:{},colors:{}};
 
@@ -619,7 +605,7 @@ function toCheckout(){
       let isDisabled = remaining <= 0 && val == 0;
       return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
         <span style="width:50px">${s}:</span>
-        <input type="number" min="0" max="${totalQty}" value="${val}" ${isDisabled?'disabled':''} style="width:70px;padding:6px;${isDisabled?'background:#e0e0e0;cursor:not-allowed':''}" oninput="setDist(${id},'sizes','${s}',this.value)">
+        <input type="number" min="0" max="${totalQty}" value="${val}" ${isDisabled?'disabled':''} style="width:70px;padding:6px;${isDisabled?'background:#e0e0e0;cursor:not-allowed':''}" oninput="setDist('${id}','sizes','${s}',this.value)">
       </div>`
     }).join('')+`</div>` : '';
 
@@ -629,7 +615,7 @@ function toCheckout(){
       let isDisabled = remaining <= 0 && val == 0;
       return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
         <span style="width:50px">${c}:</span>
-        <input type="number" min="0" max="${totalQty}" value="${val}" ${isDisabled?'disabled':''} style="width:70px;padding:6px;${isDisabled?'background:#e0e0e0;cursor:not-allowed':''}" oninput="setDist(${id},'colors','${c}',this.value)">
+        <input type="number" min="0" max="${totalQty}" value="${val}" ${isDisabled?'disabled':''} style="width:70px;padding:6px;${isDisabled?'background:#e0e0e0;cursor:not-allowed':''}" oninput="setDist('${id}','colors','${c}',this.value)">
       </div>`
     }).join('')+`</div>` : '';
 
@@ -647,14 +633,13 @@ function toCheckout(){
   cg.onchange=calc; COUPON=0;coupon.value='';cpBox.style.display=SET.cpOn?'flex':'none';calc();
 
   if(!document.getElementById('checkout').classList.contains('on')){
-    cartToggle();
-    go('checkout')
+    if(cart.style.display=='block') cartToggle();
+    go('checkout');
   }
 }
 
-// دالة التحكم
 function setDist(id,type,key,val){
-  let p = PROD.find(x=>x.id==+id);
+  let p = PROD.find(x=>x.id==id);
   let opt = CHK_OPTS[id];
   let totalQty = CART[id];
 
@@ -667,19 +652,13 @@ function setDist(id,type,key,val){
     toast('المجموع ماينفعش يزيد عن '+totalQty);
     opt[type][key] = totalQty - (sum - val);
   }
-  toCheckout(); // هنا الفرق
+  toCheckout(); 
 }
-function setOpt(id,key,val,el){
-  if(el.classList.contains('disabled'))return toast(i18n[LANG].item_out);
-  CHK_OPTS[id][key]=val;
-  let group = key=='sz'? el.closest('.sz-group') : el.closest('.cl-group');
-  group.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-}
+
 function calc(){
-  let sub=0, bulkSave=0; // 1. عرفنا bulkSave
+  let sub=0, bulkSave=0;
   Object.keys(CART).forEach(id=>{
-    let p=PROD.find(x=>x.id==+id);
+    let p=PROD.find(x=>x.id==id);
     if(!p) return;
     let qty = CART[id];
     let normalPrice = p.disc && p.disc < p.v? p.disc : p.v;
@@ -688,14 +667,14 @@ function calc(){
     let normalTotal = normalPrice * qty;
 
     if(p.bulk_on && qty >= p.bulk_qty){
-      bulkSave += normalTotal - itemTotal; // 2. بنحسب فرق الخصم
+      bulkSave += normalTotal - itemTotal; 
     }
     sub += itemTotal;
   });
 
   let ship=+cg.value||0;
   let discountAmount = sub * (COUPON / 100);
-  LAST={sub,ship,tot:sub+ship-discountAmount, bulkSave: bulkSave}; // 3. حفظنا bulkSave
+  LAST={sub,ship,tot:sub+ship-discountAmount, bulkSave: bulkSave}; 
 
   sum.innerHTML=`<hr><table style="background:transparent">
     <tr><td>المنتجات</td><td><b>${sub.toFixed(1)}</b></td></tr>
@@ -704,8 +683,10 @@ function calc(){
     ${COUPON>0?`<tr><td>خصم الكوبون</td><td style="color:var(--green)">-%${COUPON} (-${discountAmount.toFixed(1)})</td></tr>`:''}
     <tr><td><b>الإجمالي</b></td><td><b style="color:var(--main);font-size:20px">${LAST.tot.toFixed(1)} جنيه</b></td></tr></table>`;
 }
+
 function applyCoupon(){if(coupon.value==SET.cpCode){COUPON=+SET.cpVal;toast(`%${COUPON} OK`)}else{COUPON=0;toast('Error')};calc()}
-function finish(){
+
+async function finish(){
   if(!cn.value) return toast('من فضلك اكتب الاسم');
   if(!cp.value) return toast('من فضلك اكتب الموبايل');
   if(!ca.value) return toast('من فضلك اكتب العنوان');
@@ -713,7 +694,7 @@ function finish(){
 
   let items=[];
   for(let id in CART){
-    let p=PROD.find(x=>x.id==+id);
+    let p=PROD.find(x=>x.id==id);
     let opt=CHK_OPTS[id];
     let price = getPrice(p, CART[id]);
     let sizeSum = Object.values(opt.sizes).reduce((a,b)=>a+b,0);
@@ -721,15 +702,17 @@ function finish(){
     if(sizeSum!= CART[id]) return toast(`مجموع المقاسات لازم يساوي ${CART[id]} للمنتج ${p.n}`);
     if(colorSum!= CART[id]) return toast(`مجموع الالوان لازم يساوي ${CART[id]} للمنتج ${p.n}`);
     if(CART[id]>p.stock)return toast(`${i18n.max_stock} ${p.stock}`);
-    items.push({id:+id,n:p.n,d:p.desc||'',v:price,q:CART[id],cost:p.cost||0,sizes:opt.sizes,colors:opt.colors});
+    items.push({id:id,n:p.n,d:p.d||'',v:price,q:CART[id],cost:p.cost||0,sizes:opt.sizes,colors:opt.colors});
+    
     p.stock-=CART[id];
-    for(let c in opt.colors){ if(p.stockByColor[c]) p.stockByColor[c] -= opt.colors[c]; }
-    for(let s in opt.sizes){ if(p.stockBySize[s]) p.stockBySize[s] -= opt.sizes[s]; }
+    for(let c in opt.colors){ if(p.stockByColor && p.stockByColor[c]) p.stockByColor[c] -= opt.colors[c]; }
+    for(let s in opt.sizes){ if(p.stockBySize && p.stockBySize[s]) p.stockBySize[s] -= opt.sizes[s]; }
+    
+    // تحديث المخزون في السحاب للمنتج
+    await setDoc(doc(db, "products", id), p);
   }
 
   let newOrder = {
-    id:Date.now(),
-    date:new Date().toLocaleString(LANG==='ar'?'ar-EG':'en-US'),
     items,
     subtotal: LAST.sub,
     bulkDiscount: LAST.bulkSave || 0,
@@ -740,12 +723,10 @@ function finish(){
     c:{n:cn.value,p:cp.value,a:ca.value,g:cg.options[cg.selectedIndex].text}
   };
 
-  ORD.unshift(newOrder);
-  saveAll();
+  await saveOrderToCloud(newOrder);
   CART={};CHK_OPTS={};COUPON=0;updC();toast('تم الطلب بنجاح ');cn.value=cp.value=ca.value='';go('store')
 }
 
-// دالة قراءة ومعالجة ملفات الميديا المتعددة المرفوعة
 pi.onchange = e => {
   let files = Array.from(e.target.files);
   if(!files.length) return;
@@ -783,18 +764,20 @@ function drawTags(){szTags.innerHTML=TMP_SZ.map((s,i)=>`<span class="tag">${s}<s
 function drawClStock(){clStockBox.innerHTML=TMP_CL.length?TMP_CL.map(c=>`<div class="stock-row"><b>${c}:</b><input type="number" value="${TMP_CL_STOCK[c]||0}" oninput="TMP_CL_STOCK['${c}']=+this.value"></div>`).join(''):'...'}
 function drawSzStock(){szStockBox.innerHTML=TMP_SZ.length?TMP_SZ.map(s=>`<div class="stock-row"><b>${s}:</b><input type="number" value="${TMP_SZ_STOCK[s]||0}" oninput="TMP_SZ_STOCK['${s}']=+this.value"></div>`).join(''):'...'}
 
-function resetTags(){
+function resetTags() {
   TMP_SZ=[];TMP_CL=[];TMP_CL_STOCK={};TMP_SZ_STOCK={};TMP_MEDIA=[];
   drawTags();drawClStock();drawSzStock();renderPreviewGallery();
   pn.value=''; pp.value=''; pd.value=''; pdisc.value=''; pstock.value='0'; pcost.value='';
   pi.value=''; showStock.checked=true;
+  let btn = document.getElementById('productBtn');
+  btn.innerText = "اضافة المنتج";
+  btn.setAttribute('onclick', "addP()");
 }
 
 async function addP(){
   if(!TMP_MEDIA.length) return alert('برجاء رفع صورة أو فيديو واحد على الأقل للمنتج');
   
   try {
-    // إرسال المنتج مباشرة إلى الفايربيز
     await addDoc(collection(db, "products"), {
       n: pn.value,
       cost: +pcost.value || 0,
@@ -809,11 +792,13 @@ async function addP(){
       stockByColor: {...TMP_CL_STOCK},
       stockBySize: {...TMP_SZ_STOCK},
       maxQty: +pmax.value || 999,
+      bulk_on: 0,
+      bulk_qty: 5,
+      bulk_disc: 20
     });
     
     resetTags();
     toast('تمت إضافة المنتج بنجاح');
-    // لا تحتاج لاستدعاء drawP لأن الـ onSnapshot سيحدث اللوحة تلقائياً
   } catch(error) {
     console.error("Error adding product: ", error);
     alert("حدث خطأ أثناء حفظ المنتج في السحابة");
@@ -832,55 +817,57 @@ async function delP(id){
   }
 }
 
-function delOrder(id){
-  if(confirm(i18n.del_confirm_ord)){
-    ORD = ORD.filter(x=>x.id!=id);
-    saveAll();
-    drawO();
-    toast('تم الحذف');
+async function delOrder(id){
+  if(confirm(i18n[LANG].del_confirm_ord)){
+    try {
+      await deleteDoc(doc(db, "orders", id));
+      toast('تم الحذف بنجاح');
+    } catch(error) {
+      console.error(error);
+      alert("خطأ في الحذف");
+    }
   }
 }
-
 
 function editP(id){
   let p = PROD.find(x=>x.id==id);
   if(!p) return;
 
   pn.value = p.n;
-  pcost.value = p.cost;
+  pcost.value = p.cost || 0;
   pp.value = p.v;
-  pdisc.value = p.disc;
-  pstock.value = p.stock;
- pmax.value = (p.maxQty && p.maxQty!= 999)? p.maxQty : '';
-  pd.value = p.d;
-  showStock.checked = p.showStock;
+  pdisc.value = p.disc || '';
+  pstock.value = p.stock || 0;
+  pmax.value = (p.maxQty && p.maxQty!= 999)? p.maxQty : '';
+  pd.value = p.d || '';
+  showStock.checked = p.showStock ?? true;
 
-  resetTags();
-  TMP_SZ = [...p.sz];
-  TMP_CL = [...p.cl];
-  TMP_CL_STOCK = {...p.stockByColor};
-  TMP_SZ_STOCK = {...p.stockBySize};
-  TMP_MEDIA = [...p.media];
+  TMP_SZ = [...(p.sz || [])];
+  TMP_CL = [...(p.cl || [])];
+  TMP_CL_STOCK = {...(p.stockByColor || {})};
+  TMP_SZ_STOCK = {...(p.stockBySize || {})};
+  TMP_MEDIA = [...(p.media || [])];
 
   drawTags();
   drawClStock();
   drawSzStock();
   renderPreviewGallery();
 
-  // حط دول هنا
   let btn = document.getElementById('productBtn');
   btn.innerText = "حفظ التعديلات";
-  btn.setAttribute('onclick', `updateP(${id})`);
+  btn.setAttribute('onclick', `updateP('${id}')`);
 
   go('products');
   window.scrollTo(0,0);
 }
+
 async function updateP(id){
   if(!TMP_MEDIA.length) return alert('برجاء رفع صورة أو فيديو واحد على الأقل للمنتج');
 
   try {
-    // تعديل المستند مباشرة في الفايربيز باستخدام الـ id النصي الخاص به
+    let p = PROD.find(x=>x.id==id) || {};
     await setDoc(doc(db, "products", id), {
+      ...p,
       n: pn.value,
       cost: +pcost.value || 0,
       v: +pp.value,
@@ -897,16 +884,30 @@ async function updateP(id){
     });
 
     resetTags();
-    let btn = document.getElementById('productBtn');
-    btn.innerText = "اضافة المنتج";
-    btn.setAttribute('onclick', "addP()");
-
     toast('تم التحديث بنجاح');
   } catch(error) {
     console.error("Error updating product: ", error);
     alert("حدث خطأ أثناء تحديث المنتج");
   }
 }
+
+async function toggleBulk(id, checked) {
+  let p = PROD.find(x=>x.id==id);
+  if(p) {
+    p.bulk_on = checked ? 1 : 0;
+    await setDoc(doc(db, "products", id), p);
+    toast('تم تعديل العرض');
+  }
+}
+
+async function updateBulkValue(id, key, val) {
+  let p = PROD.find(x=>x.id==id);
+  if(p) {
+    p[key] = +val;
+    await setDoc(doc(db, "products", id), p);
+  }
+}
+
 function drawP(){
   pTable.innerHTML='';
   PROD.forEach(x=>{
@@ -917,12 +918,12 @@ function drawP(){
 
     pTable.innerHTML+=`<tr>
       <td><img src="${firstImg}" style="width:50px;height:50px;object-fit:cover;border-radius:8px"></td>
-      <td>${x.n}<br><small style="color:var(--muted)">التكلفة: ${x.cost} ج</small></td>
+      <td>${x.n}<br><small style="color:var(--muted)">التكلفة: ${x.cost||0} ج</small></td>
       <td>${price} جنيه</td>
       <td>${x.stock}</td>
       <td style="min-width:220px">
-        <button class="btn small" onclick="editP(${x.id})">تعديل</button>
-        <button class="btn small red" onclick="delP(${x.id})">حذف</button>
+        <button class="btn small" onclick="editP('${x.id}')">تعديل</button>
+        <button class="btn small red" onclick="delP('${x.id}')">حذف</button>
 
         <hr style="margin:8px 0">
         <div style="text-align:right; background:#f8f9fa; padding:8px; border-radius:8px">
@@ -930,21 +931,19 @@ function drawP(){
 
           <label style="display:flex; align-items:center; gap:5px; margin-top:5px">
             <input type="checkbox" ${x.bulk_on?'checked':''}
-            onchange="PROD.find(p=>p.id==${x.id}).bulk_on=this.checked?1:0; saveAll(); drawP()">
+            onchange="toggleBulk('${x.id}', this.checked)">
             تفعيل
           </label>
 
           <div style="display:flex; gap:5px; margin-top:5px">
-            <input type="number" placeholder="القطع" value="${x.bulk_qty||5}" min="2"
-            style="width:70px"
-            onchange="PROD.find(p=>p.id==${x.id}).bulk_qty=+this.value; saveAll()">
+            <input type="number" placeholder="القطع" value="${x.bulk_qty||5}" min="2" style="width:70px"
+            onchange="updateBulkValue('${x.id}', 'bulk_qty', this.value)">
             <span>قطعة</span>
           </div>
 
           <div style="display:flex; gap:5px; margin-top:5px">
-            <input type="number" placeholder="النسبة" value="${x.bulk_disc||20}" min="1" max="99"
-            style="width:70px"
-            onchange="PROD.find(p=>p.id==${x.id}).bulk_disc=+this.value; saveAll()">
+            <input type="number" placeholder="النسبة" value="${x.bulk_disc||20}" min="1" max="99" style="width:70px"
+            onchange="updateBulkValue('${x.id}', 'bulk_disc', this.value)">
             <span>%</span>
           </div>
         </div>
@@ -952,14 +951,14 @@ function drawP(){
     </tr>`;
   });
 }
+
 function drawO(){
   const search = document.getElementById('searchOrder').value.toLowerCase();
   
-  // فلتر الطلبات
   const filteredORD = ORD.filter(o => {
     return o.id.toString().includes(search) || 
-           o.c.n.toLowerCase().includes(search) ||
-           o.c.p.includes(search)
+           (o.c && o.c.n && o.c.n.toLowerCase().includes(search)) ||
+           (o.c && o.c.p && o.c.p.includes(search))
   });
 
   if(!filteredORD.length){
@@ -969,7 +968,7 @@ function drawO(){
   
   let html = '';
   filteredORD.forEach(o=>{
-    let itemsHtml = o.items.map(i=>{
+    let itemsHtml = (o.items || []).map(i=>{
       let sizesText = '';
       if(i.sizes && Object.keys(i.sizes).length){
         sizesText = Object.entries(i.sizes).map(([k,v])=>`${k}: ${v}`).join(' - ');
@@ -986,16 +985,16 @@ function drawO(){
     html += `
     <div class="order" id="order-${o.id}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <h4 style="margin:0">${i18n[LANG].order_no} ${o.id}</h4>
+        <h4 style="margin:0">${i18n[LANG].order_no} ${o.id.toString().substring(0,8)}...</h4>
         <span class="badge ${o.st=='new'?'new':o.st=='ship'?'ship':o.st=='ok'?'ok':'cancel'}">
           ${o.st=='new'?'جديد':o.st=='ship'?'اتشحن':o.st=='ok'?'تم التسليم':'ملغي'}
         </span>
       </div>
-      <p style="margin:6px 0;color:var(--muted)"><b>${o.date}</b></p>
-      <p><b>${o.c.n}</b> - ${o.c.p}</p>
-      <p>${o.c.g} - ${o.c.a}</p>
+      <p style="margin:6px 0;color:var(--muted)"><b>${o.date || ''}</b></p>
+      <p><b>${o.c ? o.c.n : ''}</b> - ${o.c ? o.c.p : ''}</p>
+      <p>${o.c ? o.c.g : ''} - ${o.c ? o.c.a : ''}</p>
       <div style="border-top:1px dashed #ddd;padding-top:8px">${itemsHtml}</div>
-      <h4 style="color:var(--main)">${i18n[LANG].total_lbl}: ${o.tot.toFixed(1)} ${i18n[LANG].currency}</h4>
+      <h4 style="color:var(--main)">${i18n[LANG].total_lbl}: ${(o.tot || 0).toFixed(1)} ${i18n[LANG].currency}</h4>
        <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn small" style="background:#0ea5e9;color:#fff" onclick="setShipped('${o.id}')">اتشحن</button>
         <button class="btn green small" onclick="setSt('${o.id}','ok')">تم التسليم</button>
@@ -1003,36 +1002,45 @@ function drawO(){
         <button class="btn gray small" style="background:#444; color:#fff" onclick="printInvoice('${o.id}')">طباعة</button>
         <button class="btn red small" style="background:#dc3545" onclick="delOrder('${o.id}')">حذف</button>
       </div>
-      
     </div>`
   });
   
   oList.innerHTML = html;
 }
-function setShipped(id){
+
+async function setShipped(id){
   let o = ORD.find(x=>x.id==id);
-  if(o){ o.st = 'ship'; saveAll(); drawO(); toast('تم الشحن'); }
+  if(o){ 
+    o.st = 'ship'; 
+    await setDoc(doc(db, "orders", id), o);
+    toast('تم الشحن'); 
+  }
 }
 
-function setSt(id,st){
+async function setSt(id,st){
   let o = ORD.find(x=>x.id==id);
-  if(o){ o.st = st; saveAll(); drawO(); toast('تم التحديث'); }
+  if(o){ 
+    o.st = st; 
+    await setDoc(doc(db, "orders", id), o);
+    toast('تم التحديث'); 
+  }
 }
+
 function printInvoice(id){
   let o = ORD.find(x=>x.id==id);
   if(!o) return alert('الطلب مش موجود');
 
-  let cName = o.c.n || '-';
-  let cPhone = o.c.p || '-';
-  let cGov = o.c.g || '-';
-  let cAddr = o.c.a || '-';
+  let cName = o.c ? o.c.n : '-';
+  let cPhone = o.c ? o.c.p : '-';
+  let cGov = o.c ? o.c.g : '-';
+  let cAddr = o.c ? o.c.a : '-';
   let shipping = Number(o.ship || 0);
   let couponDiscount = Number(o.coupon || 0);
-  let bulkDiscount = Number(o.bulkDiscount || 0); // 1. ضفنا ده
+  let bulkDiscount = Number(o.bulkDiscount || 0); 
 
   let subtotal = 0;
   
-  let items = o.items.map(i=>{
+  let items = (o.items || []).map(i=>{
     let price = Number(i.v || 0);
     let qty = Number(i.q || 1);
     let itemTotal = price * qty;
@@ -1058,7 +1066,7 @@ function printInvoice(id){
     </tr>`;
   }).join('');
 
-  let totalAfterDiscounts = subtotal - bulkDiscount - couponDiscount; // 2. عدلنا دي
+  let totalAfterDiscounts = subtotal - bulkDiscount - couponDiscount; 
   let finalTotal = totalAfterDiscounts + shipping;
 
   let w = window.open('', '_blank', 'width=900,height=700');
@@ -1066,7 +1074,7 @@ function printInvoice(id){
     <html dir="rtl" lang="ar">
     <head>
       <meta charset="UTF-8">
-      <title>فاتورة #${o.id}</title>
+      <title>فاتورة</title>
       <style>
         body{font-family:Arial; padding:20px; background:#fff}
         h2{text-align:center; margin-bottom:20px}
@@ -1075,7 +1083,7 @@ function printInvoice(id){
         th{background:#f2f2f2; font-weight:bold}
         .info{text-align:right; line-height:2.2; font-size:15px; margin-bottom:20px; border:1px solid #eee; padding:15px; border-radius:8px}
         .summary{text-align:left; font-size:16px; margin-top:20px; border-top:2px solid #000; padding-top:15px; line-height:2}
-        .total{font-size:20px; font-weight:bold; color:var(--main, #d32f2f)}
+        .total{font-size:20px; font-weight:bold; color:#ff6600}
         .btn-print{margin-top:20px;padding:12px 25px;background:#444;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:16px}
         @media print{ .btn-print{display:none} body{padding:0} }
       </style>
@@ -1083,8 +1091,8 @@ function printInvoice(id){
     <body>
       <h2>فاتورة مبيعات - ${SET.name}</h2>
       <div class="info">
-        <b>رقم الفاتورة:</b> ${o.id} <br>
-        <b>التاريخ:</b> ${o.date} <br>
+        <b>رقم الطلب:</b> ${o.id} <br>
+        <b>التاريخ:</b> ${o.date || ''} <br>
         <b>العميل:</b> ${cName} <br>
         <b>التليفون:</b> ${cPhone} <br>
         <b>المحافظة:</b> ${cGov} <br>
@@ -1101,7 +1109,7 @@ function printInvoice(id){
 
       <div class="summary">
         <div>المجموع الفرعي: ${subtotal.toFixed(1)} جنيه</div>
-        ${bulkDiscount > 0 ? `<div style="color:orange">خصم الكمية: -${bulkDiscount.toFixed(1)} جنيه</div>` : ''}  <!-- 3. ضفنا ده -->
+        ${bulkDiscount > 0 ? `<div style="color:orange">خصم الكمية: -${bulkDiscount.toFixed(1)} جنيه</div>` : ''} 
         ${couponDiscount > 0 ? `<div style="color:green">خصم الكوبون: -${couponDiscount.toFixed(1)} جنيه</div>` : ''}
         <div>تكلفة الشحن: ${shipping.toFixed(1)} جنيه</div>
         <div class="total">الإجمالي النهائي: ${finalTotal.toFixed(1)} جنيه</div>
@@ -1113,13 +1121,14 @@ function printInvoice(id){
   w.document.close();
   w.focus();
 }
+
 function drawDashboard(){
   let totalSales = 0; let totalProfits = 0; let totalSoldQty = 0; let productStats = {};
   PROD.forEach(p => { productStats[p.id] = { n: p.n, currentStock: p.stock, soldQty: 0, revenue: 0, profit: 0 }; });
 
   ORD.forEach(order => {
     if(order.st === 'ok'){
-      order.items.forEach(item => {
+      (order.items || []).forEach(item => {
         let qty = item.q;
         let revenue = item.v * qty; 
         let cost = (item.cost || 0) * qty;
@@ -1138,7 +1147,7 @@ function drawDashboard(){
   });
 
   statSales.innerText = totalSales + ` ${i18n[LANG].currency}`;
-  statProfits.innerText = totalProfits + ` ${i18n[LANG].currency}`;
+  statProfProfits.innerText = totalProfits + ` ${i18n[LANG].currency}`;
   statSoldQty.innerText = totalSoldQty + ` ${i18n[LANG].pcs}`;
 
   dashTable.innerHTML = Object.keys(productStats).map(id => {
@@ -1159,14 +1168,16 @@ function drawS(){
   SET.gov.forEach((g,i)=>{gList.innerHTML+=`<div class="gov"><input value="${g.n}" oninput="SET.gov[${i}].n=this.value"><input type="number" value="${g.v}" oninput="SET.gov[${i}].v=+this.value"><button class="btn red" onclick="SET.gov.splice(${i},1);drawS()">X</button></div>`})
   skipCart.checked=SET.skipCart;clientNote.value=SET.clientNote;countDownOn.checked=SET.countDownOn;countDownHours.value=SET.countDownHours;countDownMins.value=SET.countDownMins;countDownText.value=SET.countDownText;fakeCounterOn.checked=SET.fakeCounterOn;fakeCounterNum.value=SET.fakeCounterNum;
 }
+
 function addG(){SET.gov.push({n:'Gov',v:50});drawS()}
+
 async function saveS(){
   SET.name=stName.value;SET.wa=stWa.value;SET.theme=stColor.value;SET.cpOn=cpOn.checked;SET.cpCode=cpCode.value;SET.cpVal=+cpVal.value||0;
   SET.skipCart=skipCart.checked;SET.clientNote=clientNote.value;SET.countDownOn=countDownOn.checked;SET.countDownHours=+countDownHours.value||2;SET.countDownMins=+countDownMins.value||30;SET.countDownText=countDownText.value;SET.fakeCounterOn=fakeCounterOn.checked;SET.fakeCounterNum=+fakeCounterNum.value||10;
   if(stU.value&&stP.value)ADMIN={u:stU.value,p:stP.value};
   applyTheme(SET.theme);saveAll();sName.innerText=SET.name;
   
-  await setDoc(doc(db, "settings", "main"), SET); // ده سطر الفايربيز الجديد
+  await setDoc(doc(db, "settings", "main"), SET); 
 
   toast('OK');drawS();
 }
@@ -1175,7 +1186,7 @@ async function saveS(){
 applyTheme(SET.theme);
 sName.innerText=SET.name;
 updateLangDOM();
-drawP();
+
 function printAllOrders(){
   if(ORD.length === 0) return alert('مفيش طلبات للطباعة');
   
@@ -1183,16 +1194,16 @@ function printAllOrders(){
     let shipping = Number(o.ship || 0);
     let coupon = Number(o.coupon || 0);
     let bulk = Number(o.bulkDiscount || 0);
-    let sub = o.items.reduce((t,i)=> t + (Number(i.v)*Number(i.q||1)), 0);
+    let sub = (o.items || []).reduce((t,i)=> t + (Number(i.v)*Number(i.q||1)), 0);
     let totalAfter = sub - bulk - coupon;
     let final = totalAfter + shipping;
     
     return `<tr>
       <td>${o.id}</td>
-      <td>${o.date}</td>
-      <td>${o.c.n}</td>
-      <td>${o.c.p}</td>
-      <td>${o.items.length}</td>
+      <td>${o.date || ''}</td>
+      <td>${o.c ? o.c.n : ''}</td>
+      <td>${o.c ? o.c.p : ''}</td>
+      <td>${o.items ? o.items.length : 0}</td>
       <td>${sub.toFixed(1)}</td>
       <td>${bulk.toFixed(1)}</td>
       <td>${coupon.toFixed(1)}</td>
@@ -1229,16 +1240,14 @@ function printAllOrders(){
 }
 document.getElementById('searchOrder').addEventListener('input', drawO);
 </script>
+
 <script>
-let db; // تعريف قاعدة البيانات جلوبال
-// تعريف دوال الفايربيز جلوبال علشان الـ Functions اللي برة تشوفها
+let db; 
 let collection, addDoc, setDoc, doc, getDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc;
 
-// كود Firebase للطلبات والمنتجات
 import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js").then(({ initializeApp }) => {
 import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js").then((firestore) => {
   
-  // إسناد الدوال للمتغيرات الجلوبال
   collection = firestore.collection;
   addDoc = firestore.addDoc;
   setDoc = firestore.setDoc;
@@ -1261,25 +1270,27 @@ import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js").then((
 
   db = firestore.getFirestore(app);
 
-  // دالة حفظ الطلب
   window.saveOrderToCloud = async function(order){
-    await addDoc(collection(db, "orders"), {...order, createdAt: serverTimestamp()});
+    await addDoc(collection(db, "orders"), {...order, id: Date.now(), createdAt: serverTimestamp()});
   }
 
-  // سحب الطلبات تلقائي من السحابة لايف
+  // سحب الطلبات تلقائي
   onSnapshot(query(collection(db, "orders"), orderBy("createdAt", "desc")), (snapshot) => {
     ORD = [];
     snapshot.forEach((doc) => { ORD.push({id: doc.id, ...doc.data()}); });
-    drawO(); 
+    if(document.getElementById('orders').classList.contains('on')) drawO(); 
     if(document.getElementById('dashboard').classList.contains('on')) drawDashboard();
   });
 
-  // سحب المنتجات لايف
+  // سحب المنتجات لايف بشكل صحيح 100% بدون تصفير
   onSnapshot(collection(db, "products"), (snapshot) => {
     PROD = [];
     snapshot.forEach((doc) => { PROD.push({id: doc.id, ...doc.data()}); });
-    drawP(); // تحديث لوحة الإدارة
-    if(document.getElementById('store')) drawStore(); // تحديث المتجر للعميل
+    
+    // عند استلام المنتجات نقوم بتحديث واجهة الصفحة الفعالة حالياً فوراً
+    if(document.getElementById('store').classList.contains('on')) drawStore(); 
+    if(document.getElementById('products').classList.contains('on')) drawP(); 
+    if(document.getElementById('dashboard').classList.contains('on')) drawDashboard();
   });
 
   // سحب الاعدادات مرة واحدة عند فتح الموقع
@@ -1292,8 +1303,8 @@ import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js").then((
     }
   });
 
-}); // قفلة فضايربيز سكور
-}); // قفلة فايربيز اب
+}); 
+}); 
 </script>
 </body>
 </html>
