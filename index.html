@@ -413,6 +413,28 @@ function updC(){
 
 function cartToggle(){cart.style.display=cart.style.display=='block'?'none':'block'}
 
+// دالة مضافة للتحكم في عدد القطع مباشرة من شاشة الدفع
+window.updateCheckoutQty = function(id, d) {
+    let p = PROD.find(x => x.id == id);
+    if(!p) return;
+    let newQ = (CART[id] || 0) + d;
+    if (newQ < 1) {
+        if(confirm('هل تريد حذف المنتج من السلة؟')) {
+            delC(id);
+            if(Object.keys(CART).length === 0) return go('store');
+            return toCheckout();
+        }
+        return;
+    }
+    let max = p.maxQty || 999;
+    if (newQ > max) return toast(`اقصى عدد من ${p.n} هو ${max} قطعة`);
+    if (newQ > p.stock) return toast(`المخزون الكلي المتاح فقط: ${p.stock}`);
+    CART[id] = newQ;
+    if(CHK_OPTS[id]) CHK_OPTS[id].q = newQ;
+    updC();
+    toCheckout(); 
+}
+
 function toCheckout(){
   if(!Object.keys(CART).length)return alert('السلة فاضية');
   let noteHtml = SET.clientNote? `<div style='background:#e7f1ff;border:1px solid #b3d4fc;padding:12px;text-align:center;font-weight:600;color:#084298;margin-bottom:15px;border-radius:8px'>📢 ${SET.clientNote}</div>` : '';
@@ -441,19 +463,35 @@ function toCheckout(){
     sizeSum = Object.values(opt.sizes).reduce((a,b)=>a+b,0);
     colorSum = Object.values(opt.colors).reduce((a,b)=>a+b,0);
 
-    let sizeHtml = p.sz && p.sz.length? `<div><b>المقاسات:</b><br>`+ p.sz.map(s=>{
-      let val = opt.sizes[s]||0; let remaining = totalQty - (sizeSum - val); let isDisabled = remaining <= 0 && val == 0;
-      return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span>${s}:</span><input type="number" min="0" max="${totalQty}" value="${val}" ${isDisabled?'disabled':''} style="width:70px;padding:6px;" oninput="setDist('${id}','sizes','${s}',this.value)"></div>`
+    let sizeHtml = p.sz && p.sz.length? `<div id="sizes-${id}" style="margin-top:10px;"><b>المقاسات:</b><br>`+ p.sz.map(s=>{
+      let val = opt.sizes[s]||0; let isDisabled = (sizeSum >= totalQty) && val == 0; let bg = isDisabled ? '#e9ecef' : '#fff';
+      return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span>${s}:</span><input type="number" min="0" max="${totalQty}" value="${val}" ${isDisabled?'disabled':''} style="width:70px;padding:6px;background-color:${bg};" oninput="setDist('${id}','sizes','${s}',this.value)"></div>`
     }).join('')+`</div>` : '';
 
-    let colorHtml = p.cl && p.cl.length? `<div><b>الوان:</b><br>`+ p.cl.map(c=>{
-      let val = opt.colors[c]||0; let remaining = totalQty - (colorSum - val); let isDisabled = remaining <= 0 && val == 0;
-      return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span>${c}:</span><input type="number" min="0" max="${totalQty}" value="${val}" ${isDisabled?'disabled':''} style="width:70px;padding:6px;" oninput="setDist('${id}','colors','${c}',this.value)"></div>`
+    let colorHtml = p.cl && p.cl.length? `<div id="colors-${id}" style="margin-top:10px;"><b>الألوان:</b><br>`+ p.cl.map(c=>{
+      let val = opt.colors[c]||0; let isDisabled = (colorSum >= totalQty) && val == 0; let bg = isDisabled ? '#e9ecef' : '#fff';
+      return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span>${c}:</span><input type="number" min="0" max="${totalQty}" value="${val}" ${isDisabled?'disabled':''} style="width:70px;padding:6px;background-color:${bg};" oninput="setDist('${id}','colors','${c}',this.value)"></div>`
     }).join('')+`</div>` : '';
+
+    let descriptionHtml = p.d ? `<p style="color:var(--muted); font-size:14px; margin: 8px 0; white-space: pre-line;">${p.d}</p>` : '';
 
     return `<div class="check-prod" id="chk${id}">
-      <img src="${p.media && p.media[0]? p.media[0].src : 'https://via.placeholder.com/200'}" style="width:70px;height:70px;object-fit:cover;border-radius:8px">
-      <h3>${p.n}</h3><h4>الاجمالي: ${totalQty} قطع</h4>${sizeHtml}${colorHtml}<h3 style="color:var(--main)">السعر: ${price*totalQty} جنيه</h3>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <img src="${p.media && p.media[0]? p.media[0].src : 'https://via.placeholder.com/200'}" style="width:70px;height:70px;object-fit:cover;border-radius:8px">
+        <div>
+          <h3 style="margin:0 0 4px 0;">${p.n}</h3>
+          <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+            <h4 style="margin:0; color:var(--muted)">الكمية:</h4>
+            <button class="btn small gray" style="margin:0; padding:4px 10px;" onclick="updateCheckoutQty('${id}', -1)">-</button>
+            <b style="font-size:18px;">${totalQty}</b>
+            <button class="btn small gray" style="margin:0; padding:4px 10px;" onclick="updateCheckoutQty('${id}', 1)">+</button>
+          </div>
+        </div>
+      </div>
+      ${descriptionHtml}
+      ${sizeHtml}
+      ${colorHtml}
+      <h3 style="color:var(--main); margin-top:12px;">السعر: ${price*totalQty} جنيه</h3>
     </div>`
   }).join('');
 
@@ -470,8 +508,30 @@ function toCheckout(){
 function setDist(id,type,key,val){
   let opt = CHK_OPTS[id]; let totalQty = CART[id]; val = +val || 0; opt[type][key] = val;
   let sum = Object.values(opt[type]).reduce((a,b)=>a+b,0);
-  if(sum > totalQty){ toast('المجموع ماينفعش يزيد عن '+totalQty); opt[type][key] = totalQty - (sum - val); }
-  toCheckout(); 
+  
+  if(sum > totalQty){ 
+      toast('المجموع ماينفعش يزيد عن '+totalQty); 
+      opt[type][key] = totalQty - (sum - val); 
+      val = opt[type][key];
+      sum = totalQty;
+      let currentInput = document.querySelector(`#${type}-${id} input[oninput*="'${key}'"]`);
+      if(currentInput) currentInput.value = val;
+  }
+  
+  let container = document.getElementById(type + '-' + id);
+  if(container) {
+      container.querySelectorAll('input').forEach(input => {
+        let inputVal = +input.value || 0;
+        if (sum >= totalQty && inputVal === 0) {
+          input.disabled = true;
+          input.style.backgroundColor = "#e9ecef";
+        } else {
+          input.disabled = false;
+          input.style.backgroundColor = "#fff";
+        }
+      });
+  }
+  calc();
 }
 
 function calc(){
