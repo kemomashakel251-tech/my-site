@@ -95,8 +95,10 @@ function go(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove
 function applyTheme(color){document.documentElement.style.setProperty('--main', color);document.documentElement.style.setProperty('--main-dark', color + 'cc');}
 
 function getPrice(p, qty=1){
-  let price = p.disc && p.disc < p.v? p.disc : p.v;
-  if(p.bulk_on && qty >= p.bulk_qty){price = price * (1 - p.bulk_disc/100);}
+  let price = (p.disc && Number(p.disc) < Number(p.v)) ? Number(p.disc) : Number(p.v);
+  if(p.bulk_on && Number(qty) >= Number(p.bulk_qty)){
+    price = price * (1 - Number(p.bulk_disc)/100);
+  }
   return price;
 }
 
@@ -104,52 +106,112 @@ function drawStore(){
   grid.innerHTML='';
   if(PROD.length === 0) {grid.innerHTML = '<p style="text-align:center">لا توجد منتجات حاليا</p>'; return;}
   PROD.forEach((x, prodIdx)=>{
-    let priceHtml = x.disc && x.disc < x.v? `<div class="price"><span style="text-decoration:line-through;color:var(--muted);font-size:14px">${x.v}</span> ${x.disc} جنيه</div>` : `<div class="price">${x.v} جنيه</div>`;
-    let stockHtml = x.showStock && x.stock>0? `<div class="stock ${x.stock<5?'low':''}"> متبقي ${x.stock} قطعة</div>` : x.showStock && x.stock==0? `<div class="stock low">نفذت الكمية</div>` : '';
-    let btnDisabled = x.stock<=0? 'disabled' : '';
+    let vNum = Number(x.v) || 0;
+    let discNum = Number(x.disc) || 0;
+    let stockNum = Number(x.stock) || 0;
+    let bulkQtyNum = Number(x.bulk_qty) || 0;
+    let bulkDiscNum = Number(x.bulk_disc) || 0;
+
+    let priceHtml = (x.disc && discNum < vNum) ? `<div class="price"><span style="text-decoration:line-through;color:var(--muted);font-size:14px">${vNum}</span> ${discNum} جنيه</div>` : `<div class="price">${vNum} جنيه</div>`;
+    let stockHtml = x.showStock && stockNum > 0 ? `<div class="stock ${stockNum < 5 ? 'low' : ''}"> متبقي ${stockNum} قطعة</div>` : x.showStock && stockNum == 0 ? `<div class="stock low">نفذت الكمية</div>` : '';
+    let btnDisabled = stockNum <= 0 ? 'disabled' : '';
+    
     let mediaList = x.media || []; if(mediaList.length === 0) mediaList = [{type:'image', src:'https://via.placeholder.com/200'}];
     let mediaItemsHtml = mediaList.map((m, i) => {let activeClass = i === 0? 'active' : '';return m.type === 'video'? `<video src="${m.src}" class="media-item-${prodIdx} ${activeClass}" controls muted></video>` : `<img src="${m.src}" class="media-item-${prodIdx} ${activeClass}">`;}).join('');
     let navHtml = mediaList.length > 1? `<button class="media-nav prev" onclick="slideMedia(${prodIdx}, -1)">&#10095;</button><button class="media-nav next" onclick="slideMedia(${prodIdx}, 1)">&#10094;</button>` : '';
-    grid.innerHTML+=`<div class="card"><div class="media-container" id="mediaCont${prodIdx}">${mediaItemsHtml}${navHtml}</div><h4>${x.n}</h4><p>${x.d.substring(0,40)}...</p>${priceHtml}${stockHtml}<button class="btn" onclick="addC('${x.id}')" ${btnDisabled}>اضف للسلة</button>${x.bulk_on?`<div style="background:#fff3cd;color:#856404;padding:6px;border-radius:8px;font-size:12px;font-weight:700;margin:6px 0">🔥 اشتري ${x.bulk_qty} قطع ووفر ${x.bulk_disc}%</div>`:''}</div>`;
+    
+    grid.innerHTML+=`<div class="card"><div class="media-container" id="mediaCont${prodIdx}">${mediaItemsHtml}${navHtml}</div><h4>${x.n}</h4><p>${x.d ? x.d.substring(0,40) : ''}...</p>${priceHtml}${stockHtml}<button class="btn" onclick="addC('${x.id}')" ${btnDisabled}>اضف للسلة</button>${x.bulk_on?`<div style="background:#fff3cd;color:#856404;padding:6px;border-radius:8px;font-size:12px;font-weight:700;margin:6px 0">🔥 اشتري ${bulkQtyNum} قطع ووفر ${bulkDiscNum}%</div>`:''}</div>`;
   });
 }
+
 function slideMedia(prodIdx, direction) {let container = document.getElementById(`mediaCont${prodIdx}`);let items = container.querySelectorAll(`.media-item-${prodIdx}`);let activeIdx = Array.from(items).findIndex(el => el.classList.contains('active'));items[activeIdx].classList.remove('active');if(items[activeIdx].tagName === 'VIDEO') items[activeIdx].pause();let nextIdx = activeIdx + direction;if(nextIdx >= items.length) nextIdx = 0;if(nextIdx < 0) nextIdx = items.length - 1;items[nextIdx].classList.add('active');}
 
-function addC(id){let p=PROD.find(x=>x.id==id);if(!p)return toast('المنتج مش موجود');if(p.stock<=0)return toast('خلص');let max = p.maxQty || 999;if((CART[id]||0) >= max) return toast(`اقصى عدد من ${p.n} هو ${max} قطعة`);CART[id]=(CART[id]||0)+1;updC();if(SET.skipCart){toCheckout();return;}toast('تمت الاضافة');}
+function addC(id){
+  let p=PROD.find(x=>x.id==id); if(!p)return toast('المنتج مش موجود');
+  let stockNum = Number(p.stock) || 0; if(stockNum<=0)return toast('خلص');
+  let max = Number(p.maxQty) || 999; if((CART[id]||0) >= max) return toast(`اقصى عدد من ${p.n} هو ${max} قطعة`);
+  CART[id]=(CART[id]||0)+1; updC(); if(SET.skipCart){toCheckout();return;} toast('تمت الاضافة');
+}
+
 function delC(id){delete CART[id];delete CHK_OPTS[id];updC()}
-function chgQty(id,d){let p=PROD.find(x=>x.id==id);if(!p)return delC(id);let newQ=(CART[id]||0)+d;if(newQ<1)return delC(id);let max = p.maxQty || 999;if(newQ > max) return toast(`اقصى عدد من ${p.n} هو ${max} قطعة`);if(newQ>p.stock)return toast(`المخزون المتاح فقط: ${p.stock}`);CART[id]=newQ;CHK_OPTS[id].q=CART[id];updC();}
-function updC(){let items=Object.keys(CART).map(id=>({id:id,p:PROD.find(x=>x.id==id),q:CART[id]}));let total=items.reduce((a,b)=>a+b.q,0);cNum.innerText=total;cNum2.innerText=total;cItems.innerHTML=items.map(x=>{let firstMedia = x.p.media && x.p.media[0]? x.p.media[0] : {type:'image', src:'https://via.placeholder.com/200'};let previewTag = firstMedia.type === 'video'? `<video src="${firstMedia.src}" muted></video>` : `<img src="${firstMedia.src}">`;return `<div class="cart-item">${previewTag}<div style="flex:1"><b>${x.p.n}</b><br><span style="color:var(--muted)">${getPrice(x.p, x.q)} جنيه</span></div><div class="qty"><button class="btn small gray" onclick="chgQty('${x.id}',-1)">-</button><b>${x.q}</b><button class="btn small gray" onclick="chgQty('${x.id}',1)">+</button></div><button class="btn small red" onclick="delC('${x.id}')">X</button></div>`}).join('')||`<p style="text-align:center;color:var(--muted)">السلة فارغة</p>`;}
+
+function chgQty(id,d){
+  let p=PROD.find(x=>x.id==id); if(!p)return delC(id);
+  let newQ=(CART[id]||0)+d; if(newQ<1)return delC(id);
+  let max = Number(p.maxQty) || 999; if(newQ > max) return toast(`اقصى عدد من ${p.n} هو ${max} قطعة`);
+  let stockNum = Number(p.stock) || 0; if(newQ > stockNum)return toast(`المخزون المتاح فقط: ${stockNum}`);
+  CART[id]=newQ; if(CHK_OPTS[id]) CHK_OPTS[id].q=CART[id]; updC(); if(document.getElementById('checkout').classList.contains('on')) calc();
+}
+
+function updC(){
+  let items=Object.keys(CART).map(id=>({id:id,p:PROD.find(x=>x.id==id),q:CART[id]})).filter(x=>x.p);
+  let total=items.reduce((a,b)=>a+b.q,0); cNum.innerText=total; cNum2.innerText=total;
+  cItems.innerHTML=items.map(x=>{
+    let firstMedia = x.p.media && x.p.media[0]? x.p.media[0] : {type:'image', src:'https://via.placeholder.com/200'};
+    let previewTag = firstMedia.type === 'video'? `<video src="${firstMedia.src}" muted></video>` : `<img src="${firstMedia.src}">`;
+    return `<div class="cart-item">${previewTag}<div style="flex:1"><b>${x.p.n}</b><br><span style="color:var(--muted)">${getPrice(x.p, x.q)} جنيه</span></div><div class="qty"><button class="btn small gray" onclick="chgQty('${x.id}',-1)">-</button><b>${x.q}</b><button class="btn small gray" onclick="chgQty('${x.id}',1)">+</button></div><button class="btn small red" onclick="delC('${x.id}')">X</button></div>`
+  }).join('')||`<p style="text-align:center;color:var(--muted)">السلة فارغة</p>`;
+}
+
 function cartToggle(){cart.style.display=cart.style.display=='block'?'none':'block'}
 
 function toCheckout(){
   if(!Object.keys(CART).length)return alert('السلة فاضية');
   let noteHtml = SET.clientNote? `<div style='background:#e7f1ff;border:1px solid #b3d4fc;padding:12px;text-align:center;font-weight:600;color:#084298;margin-bottom:15px;border-radius:8px'>📢 ${SET.clientNote}</div>` : '';
   let countDownHtml = SET.countDownOn? `<div style='background:#ffcc00;padding:10px;text-align:center;font-weight:bold;color:#000;margin-bottom:15px'>⏰ ${SET.countDownText} ${SET.countDownHours}:${SET.countDownMins}</div>` : '';
+  
   checkList.innerHTML= noteHtml + countDownHtml + Object.keys(CART).map(id=>{
     let p=PROD.find(x=>x.id==id); if(!p) return ''; if(!CHK_OPTS[id])CHK_OPTS[id]={q:CART[id],sizes:{},colors:{}};
-    let opt = CHK_OPTS[id]; let totalQty = CART[id]; let price = getPrice(p, totalQty);
+    let opt = CHK_OPTS[id]; opt.q = CART[id]; let totalQty = CART[id]; let price = getPrice(p, totalQty);
+    
     let sizeSum = Object.values(opt.sizes).reduce((a,b)=>a+b,0); let colorSum = Object.values(opt.colors).reduce((a,b)=>a+b,0);
     if(sizeSum==0 && p.sz && p.sz.length) opt.sizes[p.sz[0]] = totalQty; if(colorSum==0 && p.cl && p.cl.length) opt.colors[p.cl[0]] = totalQty;
+    
     let sizeHtml = p.sz && p.sz.length? `<div><b>المقاسات:</b><br>`+ p.sz.map(s=>{let val = opt.sizes[s]||0; return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="width:50px">${s}:</span><input type="number" min="0" max="${totalQty}" value="${val}" oninput="setDist('${id}','sizes','${s}',this.value)" style="width:70px"></div>`}).join('')+`</div>` : '';
     let colorHtml = p.cl && p.cl.length? `<div><b>الوان:</b><br>`+ p.cl.map(c=>{let val = opt.colors[c]||0; return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="width:50px">${c}:</span><input type="number" min="0" max="${totalQty}" value="${val}" oninput="setDist('${id}','colors','${c}',this.value)" style="width:70px"></div>`}).join('')+`</div>` : '';
     return `<div class="check-prod"><img src="${p.media && p.media[0]? p.media[0].src : 'https://via.placeholder.com/200'}"><h3>${p.n}</h3><h4>الاجمالي: ${totalQty} قطع</h4>${sizeHtml}${colorHtml}<h3 style="color:var(--main)">السعر: ${price*totalQty} جنيه</h3></div>`
   }).join('');
-  cg.innerHTML=`<option value="">اختار المحافظة</option>`+SET.gov.map(g=>`<option value="${g.v}">${g.n} - ${g.v} جنيه</option>`).join('');
-  cg.onchange=calc; COUPON=0;coupon.value='';cpBox.style.display=SET.cpOn?'flex':'none';calc();cartToggle();go('checkout')
+  
+  if(SET.gov && Array.isArray(SET.gov)){
+     cg.innerHTML=`<option value="">اختار المحافظة</option>`+SET.gov.map(g=>`<option value="${g.v}">${g.n} - ${g.v} جنيه</option>`).join('');
+  }
+  cg.onchange=calc; COUPON=0; if(document.getElementById('coupon')) coupon.value=''; if(document.getElementById('cpBox')) cpBox.style.display=SET.cpOn?'flex':'none';
+  calc(); if(cart.style.display=='block') cartToggle(); go('checkout');
 }
+
 function setDist(id,type,key,val){let opt = CHK_OPTS[id];let totalQty = CART[id];val = +val || 0;opt[type][key] = val;let sum = Object.values(opt[type]).reduce((a,b)=>a+b,0);if(sum > totalQty){toast('المجموع ماينفعش يزيد عن '+totalQty);opt[type][key] = totalQty - (sum - val);}toCheckout();}
-function calc(){let sub=0, bulkSave=0;Object.keys(CART).forEach(id=>{let p=PROD.find(x=>x.id==id);if(!p) return;let qty = CART[id];let normalPrice = p.disc && p.disc < p.v? p.disc : p.v;let itemPrice = getPrice(p, qty);let itemTotal = itemPrice * qty;let normalTotal = normalPrice * qty;if(p.bulk_on && qty >= p.bulk_qty){bulkSave += normalTotal - itemTotal;}sub += itemTotal;});let ship=+cg.value||0;let discountAmount = sub * (COUPON / 100);LAST={sub,ship,tot:sub+ship-discountAmount, bulkSave: bulkSave};sum.innerHTML=`<hr><table style="background:transparent"><tr><td>المنتجات</td><td><b>${sub.toFixed(1)}</b></td></tr>${bulkSave>0?`<tr><td style="color:#22c55e">خصم الكمية</td><td style="color:#22c55e"><b>-${bulkSave.toFixed(1)}</b></td></tr>`:''}<tr><td>الشحن</td><td><b>${ship}</b></td></tr>${COUPON>0?`<tr><td>خصم الكوبون</td><td style="color:var(--green)">-%${COUPON} (-${discountAmount.toFixed(1)})</td></tr>`:''}<tr><td><b>الإجمالي</b></td><td><b style="color:var(--main);font-size:20px">${LAST.tot.toFixed(1)} جنيه</b></td></tr></table>`;}
+
+function calc(){
+  let sub=0, bulkSave=0;
+  Object.keys(CART).forEach(id=>{
+    let p=PROD.find(x=>x.id==id); if(!p) return;
+    let qty = Number(CART[id]) || 0;
+    let normalPrice = (p.disc && Number(p.disc) < Number(p.v)) ? Number(p.disc) : Number(p.v);
+    let itemPrice = getPrice(p, qty);
+    let itemTotal = itemPrice * qty;
+    let normalTotal = normalPrice * qty;
+    if(p.bulk_on && qty >= Number(p.bulk_qty)){
+       bulkSave += (normalTotal - itemTotal);
+    }
+    sub += itemTotal;
+  });
+  let ship=+cg.value||0; let discountAmount = sub * (COUPON / 100);
+  LAST={sub,ship,tot:sub+ship-discountAmount, bulkSave: bulkSave};
+  sum.innerHTML=`<hr><table style="background:transparent;width:100%"><tr><td>المنتجات</td><td><b>${sub.toFixed(1)}</b></td></tr>${bulkSave>0?`<tr><td style="color:#22c55e">خصم الكمية</td><td style="color:#22c55e"><b>-${bulkSave.toFixed(1)}</b></td></tr>`:''}<tr><td>الشحن</td><td><b>${ship}</b></td></tr>${COUPON>0?`<tr><td>خصم الكوبون</td><td style="color:var(--green)">-%${COUPON} (-${discountAmount.toFixed(1)})</td></tr>`:''}<tr><td><b>الإجمالي</b></td><td><b style="color:var(--main);font-size:20px">${LAST.tot.toFixed(1)} جنيه</b></td></tr></table>`;
+}
+
 function applyCoupon(){if(coupon.value==SET.cpCode){COUPON=+SET.cpVal;toast(`%${COUPON} تم التطبيق`)}else{COUPON=0;toast('الكود خطأ')};calc()}
 
 async function finish(){
   if(!cn.value) return toast('اكتب الاسم'); if(!cp.value) return toast('اكتب الموبايل'); if(!ca.value) return toast('اكتب العنوان'); if(!cg.value) return toast('اختار المحافظة');
   let items=[];
   for(let id in CART){
-    let p=PROD.find(x=>x.id==id); let opt=CHK_OPTS[id]; let price = getPrice(p, CART[id]);
+    let p=PROD.find(x=>x.id==id); if(!p) continue;
+    let opt=CHK_OPTS[id] || {sizes:{}, colors:{}}; let price = getPrice(p, CART[id]);
     let sizeSum = Object.values(opt.sizes).reduce((a,b)=>a+b,0); let colorSum = Object.values(opt.colors).reduce((a,b)=>a+b,0);
     if(p.sz && p.sz.length && sizeSum != CART[id]) return toast(`مجموع المقاسات لازم يساوي ${CART[id]} للمنتج ${p.n}`);
     if(p.cl && p.cl.length && colorSum != CART[id]) return toast(`مجموع الالوان لازم يساوي ${CART[id]} للمنتج ${p.n}`);
-    items.push({id:id,n:p.n,v:price,q:CART[id],cost:p.cost||0,sizes:opt.sizes,colors:opt.colors});
+    items.push({id:id,n:p.n,v:price,q:CART[id],cost:Number(p.cost)||0,sizes:opt.sizes,colors:opt.colors});
   }
   let newOrder = {id:Date.now(),date:new Date().toLocaleString('ar-EG'),items,subtotal: LAST.sub,bulkDiscount: LAST.bulkSave || 0,coupon: LAST.sub * (COUPON / 100),ship: LAST.ship,tot:LAST.tot,st:'new',c:{n:cn.value,p:cp.value,a:ca.value,g:cg.options[cg.selectedIndex].text}};
   await saveOrderToCloud(newOrder);
@@ -164,10 +226,10 @@ db = getFirestore(app);
 window.saveOrderToCloud = async function(order){await addDoc(collection(db, "orders"), {...order, createdAt: serverTimestamp()});}
 
 // سحب الاعدادات
-getDoc(doc(db, "settings", "main")).then(snap => { if(snap.exists()){ SET = snap.data(); applyTheme(SET.theme); sName.innerText=SET.name; waFloat.href=`https://wa.me/${SET.wa}`; }});
+getDoc(doc(db, "settings", "main")).then(snap => { if(snap.exists()){ SET = snap.data(); applyTheme(SET.theme); sName.innerText=SET.name || 'JOPA 🔥'; if(SET.wa) waFloat.href=`https://wa.me/${SET.wa}`; }});
 
 // سحب المنتجات لايف
-onSnapshot(collection(db, "products"), (snapshot) => {PROD = [];snapshot.forEach((doc) => { PROD.push({id: doc.id,...doc.data()}); });drawStore();});
+onSnapshot(collection(db, "products"), (snapshot) => {PROD = [];snapshot.forEach((doc) => { PROD.push({id: doc.id,...doc.data()}); });drawStore(); updC();});
 
 })});
 </script>
