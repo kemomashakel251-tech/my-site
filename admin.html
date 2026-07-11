@@ -790,45 +790,46 @@ function resetTags(){
   pi.value=''; showStock.checked=true;
 }
 
-function addP(){
-  if(!TMP_MEDIA.length)return alert('برجاء رفع صورة أو فيديو واحد على الأقل للمنتج');
-      PROD.push({
-      id:Date.now(),
-      n:pn.value,
-      cost:+pcost.value||0,
-      v:+pp.value,
-      d:pd.value,
-      media:[...TMP_MEDIA],
-      sz:[...TMP_SZ],
-      cl:[...TMP_CL],
-      disc:+pdisc.value||0,
-      stock:+pstock.value||0,
-      showStock:showStock.checked,
-      stockByColor:{...TMP_CL_STOCK},
-      stockBySize:{...TMP_SZ_STOCK},
-      maxQty: +pmax.value || 999,
-    });
-    saveAll();resetTags();toast('OK');drawP();
+async function addP(){
+  if(!pn.value) return alert('اكتب اسم المنتج');
+  if(!TMP_MEDIA.length) return alert('ضيف صورة او فيديو واحد على الاقل');
+  
+  await addDoc(collection(db,"products"),{
+    n: pn.value,
+    v: +pp.value,
+    cost: +pcost.value || 0,
+    d: pd.value,
+    media: [...TMP_MEDIA],
+    sz: [...TMP_SZ],
+    cl: [...TMP_C],
+    disc: +pdisc.value || 0,
+    stock: +pstock.value || 0,
+    showStock: showStock.checked,
+    stockByColor: {...TMP_CL_STOCK},
+    stockBySize: {...TMP_SZ_STOCK},
+    maxQty: +pmax.value || 999,
+    created: serverTimestamp()
+  });
+  
+  resetTags();
+  toast("تمت الاضافة");
+  drawP();
 }
 
-function delP(id){
+
+async function delP(id){
   if(confirm(i18n[LANG].del_confirm_prod)){
-    PROD=PROD.filter(x=>x.id!=id);
-    saveAll();
-    drawP();
+    await deleteDoc(doc(db,"products",id));
     toast('OK');
   }
 }
 
-function delOrder(id){
+async function delOrder(id){
   if(confirm(i18n.del_confirm_ord)){
-    ORD = ORD.filter(x=>x.id!=id);
-    saveAll();
-    drawO();
+    await deleteDoc(doc(db,"orders",id));
     toast('تم الحذف');
   }
 }
-
 
 function editP(id){
   let p = PROD.find(x=>x.id==id);
@@ -863,34 +864,30 @@ function editP(id){
   go('products');
   window.scrollTo(0,0);
 }
-function updateP(id){
-  if(!TMP_MEDIA.length)return alert('برجاء رفع صورة أو فيديو واحد على الأقل للمنتج');
+async function updateP(id){
+  if(!TMP_MEDIA.length) return alert('برجاء رفع صورة أو فيديو واحد على الأقل للمنتج');
 
-  let index = PROD.findIndex(x=>x.id==id);
-  PROD[index] = {
-    id: id,
-    n:pn.value,
-    cost:+pcost.value||0,
-    v:+pp.value,
-    d:pd.value,
-    media:[...TMP_MEDIA],
-    sz:[...TMP_SZ],
-    cl:[...TMP_CL],
-    disc:+pdisc.value||0,
-    stock:+pstock.value||0,
-    showStock:showStock.checked,
-    stockByColor:{...TMP_CL_STOCK},
-    stockBySize:{...TMP_SZ_STOCK},
-maxQty: +pmax.value || 999,
-};
-  
+  await setDoc(doc(db,"products",id),{
+    n: pn.value,
+    cost: +pcost.value || 0,
+    v: +pp.value,
+    d: pd.value,
+    media: [...TMP_MEDIA],
+    sz: [...TMP_SZ],
+    cl: [...TMP_CL],
+    disc: +pdisc.value || 0,
+    stock: +pstock.value || 0,
+    showStock: showStock.checked,
+    stockByColor: {...TMP_CL_STOCK},
+    stockBySize: {...TMP_SZ_STOCK},
+    maxQty: +pmax.value || 999,
+    updated: serverTimestamp()
+  });
 
-  saveAll();
   resetTags();
-
- let btn = document.getElementById('productBtn');
-btn.innerText = "اضافة المنتج";
-btn.setAttribute('onclick', "addP()");
+  let btn = document.getElementById('productBtn');
+  btn.innerText = "اضافة المنتج";
+  btn.setAttribute('onclick', "addP()");
 
   toast('تم التحديث بنجاح');
   drawP();
@@ -1222,8 +1219,7 @@ let db; // 1. عرفناه جلوبال
 
 // كود Firebase للطلبات
 import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js").then(({ initializeApp }) => {
-import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js").then(({ getFirestore, collection, addDoc, setDoc, doc, getDoc, onSnapshot, query, orderBy, serverTimestamp }) => {
-
+import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js").then(({ getFirestore, collection, addDoc, setDoc, doc, getDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc }) => {
 const app = initializeApp({
   apiKey: "AIzaSyDW1_AUSDl5vyzH_l5SucrA4CISv2Sz8g",
   authDomain: "jopa-ff3d4.firebaseapp.com",
