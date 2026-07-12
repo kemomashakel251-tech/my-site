@@ -86,21 +86,28 @@ nav a{padding:8px 12px;font-size:14px}
 }
 </style>
 
-<!-- Facebook Pixel Code -->
+<!-- Facebook Pixel Code (initialized later with the ID saved in store settings) -->
 <script>
   !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
   n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
   n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
   t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
   document,'script','https://connect.facebook.net/en_US/fbevents.js');
-  fbq('init', 'YOUR_FACEBOOK_PIXEL_ID');
-  fbq('track', 'PageView');
 </script>
 
-<!-- TikTok Pixel Code -->
+<!-- TikTok Pixel Code (initialized later with the ID saved in store settings) -->
 <script>
-  !function (w, d, t) { w.TMTK = w.TMTK || []; var s = d.createElement(t); s.async = !0; s.src = "https://analytics.tiktok.com/i18n/pixel/events.js?sdkid=YOUR_TIKTOK_PIXEL_ID"; var a = d.getElementsByTagName(t)[0]; a.parentNode.insertBefore(s, a) }(window, document, "script");
-  TMTK.push(['track', 'PageView']);
+  !function (w, d, t) {
+    w.TMTK = w.TMTK || [];
+    var ttq = w.TMTK;
+    ttq.methods = ["page","track","identify"];
+    ttq.setAndDefer = function(target, method){ target[method] = function(){ target.push([method].concat(Array.prototype.slice.call(arguments,0))); }; };
+    for (var i = 0; i < ttq.methods.length; i++) { ttq.setAndDefer(ttq, ttq.methods[i]); }
+    ttq.load = function(sdkid) {
+      var s = d.createElement(t); s.async = !0; s.src = "https://analytics.tiktok.com/i18n/pixel/events.js?sdkid=" + sdkid;
+      var a = d.getElementsByTagName(t)[0]; a.parentNode.insertBefore(s, a);
+    };
+  }(window, document, "script");
 </script>
 </head>
 <body>
@@ -139,6 +146,13 @@ nav a{padding:8px 12px;font-size:14px}
         <button class="btn gray" style="width:auto" onclick="applyCoupon()" data-key="apply_btn">تطبيق</button>
       </div>
       <div id="sum"></div>
+      <div id="vodafoneBox" style="display:none; background:#fff3cd; border:1px solid #ffe69c; border-radius:12px; padding:16px; margin:14px 0;">
+        <h4 style="margin:0 0 8px;color:#856404">💜 الدفع عن طريق فودافون كاش</h4>
+        <p style="margin:0 0 10px">حوّل قيمة الطلب على الرقم: <b id="vfNumberDisplay" style="font-size:18px;color:var(--main)"></b></p>
+        <label>ارفق صورة (اسكرين شوت) من التحويل</label>
+        <input id="vfScreenshot" type="file" accept="image/*">
+        <div id="vfPreview" style="margin-top:8px"></div>
+      </div>
       <button class="btn green" onclick="finish()" data-key="confirm_order">تأكيد الطلب</button>
       <button class="btn gray" onclick="go('store')" data-key="cancel_btn">الغاء</button>
     </div>
@@ -180,13 +194,16 @@ nav a{padding:8px 12px;font-size:14px}
 </div>
 
 <script>
-let SET={"name":"JOPA Store","wa":"2010","theme":"#ff6600","gov":[{"n":"العاصمة","v":50}],"categories":[{"id":"all","n":"الكل"},{"id":"electronics","n":"إلكترونيات"},{"id":"fashion","n":"أزياء"},{"id":"cosmetics","n":"تجميل"}],"cpOn":false,"cpCode":"SALE50","cpVal":10,"skipCart":false,"clientNote":"","fakeCounterOn":true,"fakeCounterNum":15,"countDownOn":true,"countDownHours":2,"countDownMins":30,"countDownSecs":0,"countDownText":"ينتهي العرض الخاص خلال"};
+let SET={"name":"JOPA Store","wa":"2010","theme":"#ff6600","gov":[{"n":"العاصمة","v":50}],"categories":[{"id":"all","n":"الكل"},{"id":"electronics","n":"إلكترونيات"},{"id":"fashion","n":"أزياء"},{"id":"cosmetics","n":"تجميل"}],"cpOn":false,"cpCode":"SALE50","cpVal":10,"skipCart":false,"clientNote":"","fakeCounterOn":true,"fakeCounterNum":15,"countDownOn":true,"countDownHours":2,"countDownMins":30,"countDownSecs":0,"countDownText":"ينتهي العرض الخاص خلال","fbPixelId":"","tiktokPixelId":"","vodafoneOn":false,"vodafoneNumber":""};
 let PROD=[];
 let currentFilter = 'all';
 let CART={};let LAST={};let CHK_OPTS={};let COUPON=0;
 let LANG = localStorage.lang || 'ar';
 let timerIntervalGlobal = null;
 let db;
+let pixelsInitialized = false;
+let VF_SCREENSHOT = null;
+let visitCounted = false;
 
 const i18n = {
   ar: {
@@ -303,6 +320,49 @@ function renderCategoriesDOM() {
       let activeClass = currentFilter === c.id ? 'active' : '';
       return `<button class="opt-btn ${activeClass}" onclick="filterCat('${c.id}', this)">${c.n}</button>`;
     }).join('');
+  }
+}
+
+function openLandingPage(id) {
+  let p = PROD.find(x => x.id == id);
+  if(!p) return;
+
+  window.location.hash = `lp?id=${id}`;
+
+  document.getElementById('landingTitle').innerText = p.n;
+  document.getElementById('landingDesc').innerText = p.d || (LANG==='ar' ? 'لا يوجد وصف تفصيلي متوفر حالياً لهذا المنتج.' : 'No description available for this product.');
+
+  let priceHtml = p.disc && p.disc < p.v
+    ? `<span style="text-decoration:line-through;color:var(--muted);font-size:18px; margin-left:10px;">${p.v} ${i18n[LANG].currency}</span> <span style="color:var(--main); font-size:26px; font-weight:bold;">${p.disc} ${i18n[LANG].currency}</span>`
+    : `<span style="color:var(--main); font-size:26px; font-weight:bold;">${p.v} ${i18n[LANG].currency}</span>`;
+  document.getElementById('landingPrice').innerHTML = priceHtml;
+
+  let firstMedia = p.media && p.media[0] ? p.media[0] : {type:'image', src:'https://via.placeholder.com/400'};
+  document.getElementById('landingMedia').innerHTML = firstMedia.type === 'video'
+    ? `<video src="${firstMedia.src}" controls autoplay muted style="width:100%; height:100%; object-fit:contain;"></video>`
+    : `<img src="${firstMedia.src}" style="width:100%; height:100%; object-fit:contain;">`;
+
+  let buyBtn = document.getElementById('landingBuyBtn');
+  buyBtn.setAttribute('onclick', `addC('${p.id}');`);
+
+  let timerWrap = document.getElementById('lpTimerWrapper');
+  if(SET.countDownOn) {
+     timerWrap.style.display = 'block';
+     document.getElementById('lpTimerText').innerText = SET.countDownText;
+     startDynamicTimer('lpHours', 'lpMins', 'lpSecs');
+  } else {
+     timerWrap.style.display = 'none';
+  }
+
+  go('landingPage');
+}
+
+window.addEventListener('hashchange', checkDeepLinks);
+function checkDeepLinks() {
+  let hash = window.location.hash;
+  if(hash.startsWith('#lp?id=')) {
+     let id = hash.split('=')[1];
+     setTimeout(() => { openLandingPage(id); }, 400);
   }
 }
 
@@ -498,12 +558,45 @@ function toCheckout(){
   cg.innerHTML=`<option value="">اختار المحافظة</option>`+SET.gov.map(g=>`<option value="${g.v}">${g.n} - ${g.v} جنيه</option>`).join('');
   cg.onchange=calc; COUPON=0;coupon.value='';cpBox.style.display=SET.cpOn?'flex':'none';calc();
 
+  VF_SCREENSHOT = null;
+  let vfBox = document.getElementById('vodafoneBox');
+  if(SET.vodafoneOn && SET.vodafoneNumber){
+    vfBox.style.display='block';
+    document.getElementById('vfNumberDisplay').innerText = SET.vodafoneNumber;
+    document.getElementById('vfPreview').innerHTML='';
+    document.getElementById('vfScreenshot').value='';
+  } else {
+    vfBox.style.display='none';
+  }
+
   if(!document.getElementById('checkout').classList.contains('on')){
     if(cart.style.display=='block') cartToggle();
     go('checkout');
   }
   if(SET.countDownOn) { startDynamicTimer('chkHours', 'chkMins', 'chkSecs'); }
 }
+
+document.getElementById('vfScreenshot').addEventListener('change', function(e){
+  let file = e.target.files[0];
+  if(!file) return;
+  let reader = new FileReader();
+  reader.onload = function(ev){
+    let img = new Image();
+    img.onload = function(){
+      let canvas = document.createElement('canvas');
+      let max_size = 900;
+      let width = img.width, height = img.height;
+      if(width > height){ if(width > max_size){ height *= max_size/width; width = max_size; } }
+      else { if(height > max_size){ width *= max_size/height; height = max_size; } }
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      VF_SCREENSHOT = canvas.toDataURL('image/jpeg', 0.7);
+      document.getElementById('vfPreview').innerHTML = `<img src="${VF_SCREENSHOT}" style="width:100px;height:100px;object-fit:cover;border-radius:8px">`;
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
 
 function setDist(id,type,key,val){
   let opt = CHK_OPTS[id]; let totalQty = CART[id]; val = +val || 0; opt[type][key] = val;
@@ -556,6 +649,7 @@ function applyCoupon(){if(coupon.value==SET.cpCode){COUPON=+SET.cpVal;toast(`%${
 
 async function finish(){
   if(!cn.value) return toast('من فضلك اكتب الاسم'); if(!cp.value) return toast('من فضلك اكتب الموبايل'); if(!ca.value) return toast('من فضلك اكتب العنوان'); if(!cg.value) return toast('من فضلك اختار المحافظة');
+  if(SET.vodafoneOn && SET.vodafoneNumber && !VF_SCREENSHOT) return toast('من فضلك ارفق صورة اسكرين شوت التحويل');
   let items=[];
   for(let id in CART){
     let p=PROD.find(x=>x.id==id); let opt=CHK_OPTS[id]; let price = getPrice(p, CART[id]);
@@ -572,17 +666,18 @@ async function finish(){
   }
 
   let newOrder = { id:Date.now(),date:new Date().toLocaleString('ar-EG'),items,subtotal: LAST.sub,bulkDiscount: LAST.bulkSave || 0,coupon: LAST.sub * (COUPON / 100),ship: LAST.ship,tot:LAST.tot,st:'new',c:{n:cn.value,p:cp.value,a:ca.value,g:cg.options[cg.selectedIndex].text}};
-  if(typeof fbq !== 'undefined') { fbq('track', 'Purchase', { value: LAST.tot, currency: 'EGP' }); }
-  if(typeof TMTK !== 'undefined') { TMTK.push(['track', 'CompletePayment', { value: LAST.tot, currency: 'EGP' }]); }
+  if(SET.vodafoneOn && VF_SCREENSHOT){ newOrder.paymentMethod='vodafone'; newOrder.paymentScreenshot=VF_SCREENSHOT; }
+  if(typeof fbq !== 'undefined' && SET.fbPixelId) { fbq('track', 'Purchase', { value: LAST.tot, currency: 'EGP' }); }
+  if(typeof TMTK !== 'undefined' && SET.tiktokPixelId) { TMTK.push(['track', 'CompletePayment', { value: LAST.tot, currency: 'EGP' }]); }
 
   await saveOrderToCloud(newOrder);
-  CART={};CHK_OPTS={};COUPON=0;updC();toast('تم الطلب بنجاح ');cn.value=cp.value=ca.value='';
+  CART={};CHK_OPTS={};COUPON=0;VF_SCREENSHOT=null;updC();toast('تم الطلب بنجاح ');cn.value=cp.value=ca.value='';
   window.location.hash = ""; go('store');
 }
 
 // Firebase configuration
 import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js").then(({ initializeApp }) => {
-import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js").then(({ getFirestore, collection, addDoc, doc, getDoc, setDoc, onSnapshot, serverTimestamp }) => {
+import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js").then(({ getFirestore, collection, addDoc, doc, getDoc, setDoc, onSnapshot, serverTimestamp, increment }) => {
 const app = initializeApp({apiKey: "AIzaSyDW1_AUSDl5vyzH_l5SucrA4CISv2Sz8g",authDomain: "jopa-ff3d4.firebaseapp.com",projectId: "jopa-ff3d4",storageBucket: "jopa-ff3d4.firebasestorage.app",messagingSenderId: "481955111504",appId: "1:481955111504:web:6920b1440453fb2da0e755"});
 db = getFirestore(app);
 window.saveOrderToCloud = async function(order){await addDoc(collection(db, "orders"), {...order, createdAt: serverTimestamp()});}
@@ -597,11 +692,23 @@ onSnapshot(doc(db, "settings", "main"), (snap) => {
      if(SET.wa) document.getElementById('waFloat').href=`https://wa.me/${SET.wa}`;
      renderCategoriesDOM();
      updateLangDOM();
+
+     if(!pixelsInitialized){
+       pixelsInitialized = true;
+       if(SET.fbPixelId && typeof fbq !== 'undefined'){ fbq('init', SET.fbPixelId); fbq('track', 'PageView'); }
+       if(SET.tiktokPixelId && typeof TMTK !== 'undefined' && TMTK.load){ TMTK.load(SET.tiktokPixelId); TMTK.push(['track', 'PageView']); }
+     }
   }
 });
 
+// عداد زيارات المتجر - يزيد مرة واحدة لكل تحميل للصفحة
+if(!visitCounted){
+  visitCounted = true;
+  setDoc(doc(db, "settings", "stats"), { visits: increment(1) }, { merge: true }).catch(()=>{});
+}
+
 // Live products fetch
-onSnapshot(collection(db, "products"), (snapshot) => {PROD = [];snapshot.forEach((doc) => { PROD.push({id: doc.id,...doc.data()}); });drawStore(); updC();});
+onSnapshot(collection(db, "products"), (snapshot) => {PROD = [];snapshot.forEach((doc) => { PROD.push({id: doc.id,...doc.data()}); });drawStore(); updC(); checkDeepLinks();});
 })});
 </script>
 </body>
