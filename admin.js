@@ -19,6 +19,11 @@ const SCALAR_SECTIONS = [
     { path: "footer.about", label: "وصف المكتب في الفوتر", textarea: true, full: true },
     { path: "footer.note", label: "ملاحظة أسفل الفوتر", full: true },
   ]},
+  { key: "social", tab: "عام", title: "التواصل الاجتماعي وزرار الواتساب العائم", badge: "تظهر في كل الصفحات", fields: [
+    { path: "social.whatsappNumber", label: "رقم الواتساب (أرقام بس، بكود الدولة، بدون + أو مسافات)", dir: "ltr" },
+    { path: "social.facebook", label: "رابط صفحة فيسبوك", dir: "ltr" },
+    { path: "social.linkedin", label: "رابط لينكدإن", dir: "ltr" },
+  ]},
   { key: "home-hero", tab: "الرئيسية", title: "أعلى الصفحة (Hero)", badge: "index.html", fields: [
     { path: "home.hero.eyebrow", label: "السطر الصغير فوق العنوان", full: true },
     { path: "home.hero.title", label: "العنوان (الجزء العادي)" },
@@ -85,6 +90,8 @@ const LIST_SECTIONS = [
     itemFields: [{ key: "q", label: "السؤال" }, { key: "a", label: "الإجابة", textarea: true }] },
   { key: "blog.posts", tab: "المدونة", title: "مقالات المدونة", badge: "blog.html",
     itemFields: [{ key: "tag", label: "التصنيف" }, { key: "title", label: "العنوان" }, { key: "excerpt", label: "ملخص المقال", textarea: true }, { key: "readTime", label: "مدة القراءة (مثال: ٥ دقائق قراءة)" }] },
+  { key: "contact.subjects", tab: "اتصل بنا", title: "خيارات \"نوع القضية\" في نموذج التواصل", badge: "contact.html",
+    itemFields: [{ key: "label", label: "الخيار" }] },
 ];
 
 const TAB_ORDER = ["عام", "الرئيسية", "من نحن", "خدماتنا", "المدونة", "اتصل بنا"];

@@ -51,6 +51,16 @@ function applyLists(data) {
     container.innerHTML = "";
     visible.forEach((item, idx) => {
       const node = template.cloneNode(true);
+
+      // العنصر نفسه ممكن يكون هو حامل الحقل (زي <option data-field="label">)
+      if (node.dataset && node.dataset.field) {
+        const val = item[node.dataset.field];
+        if (val !== undefined && val !== null) {
+          node.textContent = val;
+          if ("value" in node) node.value = val;
+        }
+      }
+
       node.querySelectorAll("[data-field]").forEach((el) => {
         const val = item[el.dataset.field];
         if (val !== undefined && val !== null) el.textContent = val;
