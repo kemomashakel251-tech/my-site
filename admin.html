@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>لوحة التحكم — مكتب أفق العدالة</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Markazi+Text:wght@500;600;700&family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  body{ background: var(--parchment); }
+  .admin-header{
+    background: var(--ink); color:var(--paper);
+    padding-block:18px; position:sticky; top:0; z-index:40;
+    border-bottom:1px solid var(--line);
+  }
+  .admin-header .container{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  .admin-header h1{ color:var(--paper); font-size:1.15rem; margin:0; }
+  .admin-wrap{ max-width:960px; margin-inline:auto; padding: 34px 20px 100px; }
+  .login-box{
+    max-width:420px; margin: 90px auto; background:var(--paper);
+    border:1px solid rgba(18,58,44,.12); border-radius:var(--radius);
+    padding:36px; text-align:center;
+  }
+  .login-box .seal{ width:64px; margin-inline:auto; margin-bottom:14px; }
+  .login-box h2{ margin-bottom:6px; }
+  .login-box p.hint{ color:#6B7A73; font-size:.88rem; margin-bottom:24px; }
+  .login-box .field{ text-align:right; }
+  .admin-tabs{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:26px; position:sticky; top:74px; z-index:30; background:var(--parchment); padding-block:10px; }
+  .admin-tab-btn{
+    border:1px solid var(--line); background:var(--paper); color:var(--ink-text);
+    padding:8px 16px; border-radius:999px; font-size:.82rem; font-weight:700; cursor:pointer;
+  }
+  .admin-tab-btn.active{ background:var(--emerald); color:#fff; border-color:var(--emerald); }
+  .admin-panel{ display:none; }
+  .admin-panel.active{ display:block; }
+  .admin-section{
+    background:var(--paper); border:1px solid rgba(18,58,44,.12);
+    border-radius:var(--radius); padding:26px; margin-bottom:22px;
+  }
+  .admin-section h2{ font-size:1.05rem; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .admin-section h2 .badge{
+    font-family:var(--sans); font-size:.68rem; font-weight:700;
+    color:var(--gold); border:1px solid var(--line); border-radius:999px;
+    padding:3px 10px;
+  }
+  .admin-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px 18px; margin-top:14px; }
+  @media (max-width:700px){ .admin-grid{ grid-template-columns:1fr; } }
+  .admin-grid .field.full{ grid-column:1/-1; }
+  .save-row{ display:flex; align-items:center; gap:14px; margin-top:16px; }
+  .save-status{ font-size:.83rem; color:#6B7A73; }
+  .save-status.ok{ color:#1E5240; }
+  .save-status.err{ color:#9A2E2E; }
+
+  .repeater-item{
+    border:1px solid rgba(18,58,44,.12); border-radius:var(--radius);
+    padding:16px; margin-top:14px; position:relative; background:#FCFAF4;
+  }
+  .repeater-item .admin-grid{ margin-top:6px; }
+  .repeater-tools{ display:flex; gap:8px; margin-top:12px; justify-content:flex-end; }
+  .icon-btn{
+    border:1px solid var(--line); background:#fff; border-radius:var(--radius);
+    width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center;
+    cursor:pointer; color:var(--ink-text); font-size:.9rem;
+  }
+  .icon-btn.danger{ color:#9A2E2E; border-color:#f0d3d3; }
+  .icon-btn:hover{ border-color:var(--gold); }
+  .add-item-btn{
+    margin-top:16px; width:100%; padding:12px; border:1.5px dashed var(--gold);
+    background:transparent; color:var(--emerald); font-weight:700; border-radius:var(--radius);
+    cursor:pointer; font-family:var(--sans);
+  }
+  .add-item-btn:hover{ background:rgba(201,162,39,.08); }
+  #app-loading{ text-align:center; padding:100px 20px; color:#6B7A73; }
+  .hidden{ display:none !important; }
+</style>
+</head>
+<body>
+
+<div id="app-loading">جارٍ التحقق من الدخول...</div>
+
+<!-- ===================== شاشة تسجيل الدخول ===================== -->
+<div id="login-screen" class="hidden">
+  <div class="container">
+    <div class="login-box">
+      <svg class="seal" viewBox="0 0 100 100" aria-hidden="true">
+        <circle class="ring" cx="50" cy="50" r="46" stroke-width="1.5"/>
+        <circle class="ring" cx="50" cy="50" r="38" stroke-width="1"/>
+        <path d="M50 30 L50 62 M38 40 L50 30 L62 40 M32 46 h12 M56 46 h12 M34 46 l-4 12 h16 l-4 -12 M58 46 l-4 12 h16 l-4 -12" fill="none" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h2>لوحة تحكم المكتب</h2>
+      <p class="hint">سجّل الدخول ببيانات الأدمن اللي أنشأتها في Firebase Authentication</p>
+      <form id="login-form">
+        <div class="field">
+          <label for="login-email">البريد الإلكتروني</label>
+          <input type="email" id="login-email" required autocomplete="username" />
+        </div>
+        <div class="field">
+          <label for="login-password">كلمة المرور</label>
+          <input type="password" id="login-password" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center">دخول</button>
+        <div id="login-msg" class="form-msg" role="status"></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== لوحة التحكم ===================== -->
+<div id="dashboard" class="hidden">
+  <header class="admin-header">
+    <div class="container">
+      <h1>لوحة تحكم موقع مكتب أفق العدالة</h1>
+      <div style="display:flex; align-items:center; gap:14px">
+        <a href="index.html" target="_blank" class="btn btn-ghost" style="padding:8px 16px; font-size:.85rem">عرض الموقع ↗</a>
+        <button id="logout-btn" class="btn btn-gold" style="padding:8px 16px; font-size:.85rem">تسجيل الخروج</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="admin-wrap">
+    <div class="admin-tabs" id="admin-tabs"></div>
+    <div id="admin-panels"></div>
+    <p style="text-align:center; color:#6B7A73; font-size:.85rem; margin-top:10px">
+      كل قسم له زرار حفظ خاص بيه — عدّل وضيف واحذف براحتك، وادوس "حفظ" تحت القسم اللي غيّرت فيه بس.
+    </p>
+  </div>
+</div>
+
+<script type="module" src="firebase-config.js"></script>
+<script src="admin.js" defer></script>
+</body>
+</html>

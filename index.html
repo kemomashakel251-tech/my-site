@@ -21,8 +21,8 @@
         <path d="M50 30 L50 62 M38 40 L50 30 L62 40 M32 46 h12 M56 46 h12 M34 46 l-4 12 h16 l-4 -12 M58 46 l-4 12 h16 l-4 -12" fill="none" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       <span>
-        <strong>أفق العدالة</strong>
-        <span>محاماة واستشارات قانونية</span>
+        <strong data-field="brand.name">أفق العدالة</strong>
+        <span data-field="brand.tagline">محاماة واستشارات قانونية</span>
       </span>
     </a>
 
@@ -37,9 +37,9 @@
     </nav>
 
     <div class="header-cta">
-      <a class="header-phone" href="tel:+201000000000">
+      <a class="header-phone" href="tel:+201000000000" data-field-href="info.phoneRaw" data-href-prefix="tel:">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13 1 .36 1.98.68 2.92a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.16-1.27a2 2 0 0 1 2.11-.45c.94.32 1.92.55 2.92.68A2 2 0 0 1 22 16.92z"/></svg>
-        ٠١٠٠٠ ٠٠٠ ٠٠٠
+        <span data-field="info.phone">٠١٠٠٠ ٠٠٠ ٠٠٠</span>
       </a>
       <a href="contact.html" class="btn btn-gold">احجز استشارة</a>
       <button class="nav-toggle" aria-label="فتح القائمة" aria-expanded="false">
@@ -53,9 +53,9 @@
 <section class="hero">
   <div class="container hero-grid">
     <div>
-      <div class="eyebrow" style="color:var(--gold-soft)">مكتب محاماة معتمد — أكثر من ١٨ عامًا من الخبرة</div>
-      <h1>شريكك القانوني في كل <em>قرار مصيري</em></h1>
-      <p class="lead">نقدّم استشارات قانونية دقيقة وتمثيلًا قضائيًا محترفًا للأفراد والشركات، بخبرة تراكمية في القانون المصري وفريق عمل يضع حقوقك في المقام الأول.</p>
+      <div class="eyebrow" style="color:var(--gold-soft)" data-field="hero.eyebrow">مكتب محاماة معتمد — أكثر من ١٨ عامًا من الخبرة</div>
+      <h1><span data-field="hero.title">شريكك القانوني في كل</span> <em data-field="hero.titleEm">قرار مصيري</em></h1>
+      <p class="lead" data-field="hero.lead">نقدّم استشارات قانونية دقيقة وتمثيلًا قضائيًا محترفًا للأفراد والشركات، بخبرة تراكمية في القانون المصري وفريق عمل يضع حقوقك في المقام الأول.</p>
       <div class="hero-actions">
         <a href="contact.html" class="btn btn-gold">احجز استشارتك الآن</a>
         <a href="services.html" class="btn btn-ghost">تصفح خدماتنا</a>
@@ -71,11 +71,11 @@
       </svg>
     </div>
 
-    <div class="stat-row" style="grid-column:1/-1">
-      <div class="stat"><b>١٨+</b><span>سنة خبرة قانونية</span></div>
-      <div class="stat"><b>٩٧٪</b><span>نسبة القضايا المكسوبة</span></div>
-      <div class="stat"><b>٢,٤٠٠+</b><span>استشارة قانونية</span></div>
-      <div class="stat"><b>٣٠+</b><span>محامٍ ومستشار</span></div>
+    <div class="stat-row" style="grid-column:1/-1" data-list="home.hero.stats">
+      <div class="stat"><b data-field="value">١٨+</b><span data-field="label">سنة خبرة قانونية</span></div>
+      <div class="stat"><b data-field="value">٩٧٪</b><span data-field="label">نسبة القضايا المكسوبة</span></div>
+      <div class="stat"><b data-field="value">٢,٤٠٠+</b><span data-field="label">استشارة قانونية</span></div>
+      <div class="stat"><b data-field="value">٣٠+</b><span data-field="label">محامٍ ومستشار</span></div>
     </div>
   </div>
 </section>
@@ -104,20 +104,20 @@
     </div>
     <div>
       <div class="eyebrow">من نحن</div>
-      <h2>خبرة قانونية تراكمت على مدار ثمانية عشر عامًا</h2>
-      <p>يضم مكتب أفق العدالة نخبة من المحامين والمستشارين القانونيين المتخصصين في مختلف فروع القانون المصري، ونحرص على الجمع بين الدقة القانونية والوضوح في التعامل مع كل عميل، سواء كان فردًا يبحث عن استشارة، أو شركة تحتاج إلى تغطية قانونية شاملة.</p>
-      <ul class="value-list">
+      <h2 data-field="home.about.title">خبرة قانونية تراكمت على مدار ثمانية عشر عامًا</h2>
+      <p data-field="home.about.text">يضم مكتب أفق العدالة نخبة من المحامين والمستشارين القانونيين المتخصصين في مختلف فروع القانون المصري، ونحرص على الجمع بين الدقة القانونية والوضوح في التعامل مع كل عميل، سواء كان فردًا يبحث عن استشارة، أو شركة تحتاج إلى تغطية قانونية شاملة.</p>
+      <ul class="value-list" data-list="home.about.values">
         <li>
-          <span class="num">٠١</span>
-          <div><b>تقييم واضح للموقف القانوني</b><span>قبل أي إجراء، نوضح لك الخيارات المتاحة والمخاطر المحتملة بلغة مبسطة.</span></div>
+          <span class="num" data-index-number="1">٠١</span>
+          <div><b data-field="title">تقييم واضح للموقف القانوني</b><span data-field="text">قبل أي إجراء، نوضح لك الخيارات المتاحة والمخاطر المحتملة بلغة مبسطة.</span></div>
         </li>
         <li>
-          <span class="num">٠٢</span>
-          <div><b>متابعة مستمرة لكل قضية</b><span>تتابع تطورات قضيتك أولًا بأول دون الحاجة للسؤال المتكرر.</span></div>
+          <span class="num" data-index-number="1">٠٢</span>
+          <div><b data-field="title">متابعة مستمرة لكل قضية</b><span data-field="text">تتابع تطورات قضيتك أولًا بأول دون الحاجة للسؤال المتكرر.</span></div>
         </li>
         <li>
-          <span class="num">٠٣</span>
-          <div><b>سرية تامة وعلاقة مبنية على الثقة</b><span>خصوصية بياناتك ومستنداتك القانونية محفوظة بأعلى معايير الأمان.</span></div>
+          <span class="num" data-index-number="1">٠٣</span>
+          <div><b data-field="title">سرية تامة وعلاقة مبنية على الثقة</b><span data-field="text">خصوصية بياناتك ومستنداتك القانونية محفوظة بأعلى معايير الأمان.</span></div>
         </li>
       </ul>
       <a href="about.html" class="btn btn-outline-dark" style="margin-top:26px">تعرف علينا أكثر</a>
@@ -134,42 +134,42 @@
       <p>من الاستشارة الأولى وحتى صدور الحكم، نرافقك في كل خطوة قانونية بخبرة متخصصة في كل مجال.</p>
     </div>
 
-    <div class="grid grid-3">
+    <div class="grid grid-3" data-list="services.items" data-list-limit="6">
       <div class="card card-dark">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M5 7l-3 6a3 3 0 0 0 6 0l-3-6zM19 7l-3 6a3 3 0 0 0 6 0l-3-6zM5 7h14M9 3h6"/></svg>
-        <h3>الاستشارات القانونية</h3>
-        <p>تحليل دقيق لموقفك القانوني وتوجيهك لأفضل الخيارات المتاحة قبل اتخاذ أي قرار.</p>
-        <a href="services.html#consulting" class="more">اعرف أكثر ←</a>
+        <h3 data-field="title">الاستشارات القانونية</h3>
+        <p data-field="desc">تحليل دقيق لموقفك القانوني وتوجيهك لأفضل الخيارات المتاحة قبل اتخاذ أي قرار.</p>
+        <a href="services.html" class="more">اعرف أكثر ←</a>
       </div>
       <div class="card card-dark">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 12h6M9 16h6M9 8h2M6 4h9l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/></svg>
-        <h3>صياغة ومراجعة العقود</h3>
-        <p>صياغة عقود محكمة تحمي حقوقك وتتوقع النزاعات المحتملة قبل وقوعها.</p>
-        <a href="services.html#contracts" class="more">اعرف أكثر ←</a>
+        <h3 data-field="title">صياغة ومراجعة العقود</h3>
+        <p data-field="desc">صياغة عقود محكمة تحمي حقوقك وتتوقع النزاعات المحتملة قبل وقوعها.</p>
+        <a href="services.html" class="more">اعرف أكثر ←</a>
       </div>
       <div class="card card-dark">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/></svg>
-        <h3>تأسيس الشركات</h3>
-        <p>مرافقة قانونية كاملة من اختيار الكيان القانوني وحتى استخراج التراخيص.</p>
-        <a href="services.html#companies" class="more">اعرف أكثر ←</a>
+        <h3 data-field="title">تأسيس الشركات</h3>
+        <p data-field="desc">مرافقة قانونية كاملة من اختيار الكيان القانوني وحتى استخراج التراخيص.</p>
+        <a href="services.html" class="more">اعرف أكثر ←</a>
       </div>
       <div class="card card-dark">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
-        <h3>الدعاوى المدنية</h3>
-        <p>تمثيل قانوني قوي أمام المحاكم المدنية في منازعات العقود والتعويضات والملكية.</p>
-        <a href="services.html#civil" class="more">اعرف أكثر ←</a>
+        <h3 data-field="title">الدعاوى المدنية</h3>
+        <p data-field="desc">تمثيل قانوني قوي أمام المحاكم المدنية في منازعات العقود والتعويضات والملكية.</p>
+        <a href="services.html" class="more">اعرف أكثر ←</a>
       </div>
       <div class="card card-dark">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg>
-        <h3>القضايا الجنائية</h3>
-        <p>دفاع جنائي متمرس يحرص على حماية حقوق الموكل في كل مراحل التقاضي.</p>
-        <a href="services.html#criminal" class="more">اعرف أكثر ←</a>
+        <h3 data-field="title">القضايا الجنائية</h3>
+        <p data-field="desc">دفاع جنائي متمرس يحرص على حماية حقوق الموكل في كل مراحل التقاضي.</p>
+        <a href="services.html" class="more">اعرف أكثر ←</a>
       </div>
       <div class="card card-dark">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        <h3>الأحوال الشخصية والأسرة</h3>
-        <p>تعامل إنساني ومهني في قضايا الطلاق والحضانة والنفقة والميراث.</p>
-        <a href="services.html#family" class="more">اعرف أكثر ←</a>
+        <h3 data-field="title">الأحوال الشخصية والأسرة</h3>
+        <p data-field="desc">تعامل إنساني ومهني في قضايا الطلاق والحضانة والنفقة والميراث.</p>
+        <a href="services.html" class="more">اعرف أكثر ←</a>
       </div>
     </div>
   </div>
@@ -177,11 +177,11 @@
 
 <!-- ===================== شريط إحصاءات ===================== -->
 <div class="band">
-  <div class="container grid-4">
-    <div><b>٩٩٪</b><span>رضا العملاء</span></div>
-    <div><b>٤٢+</b><span>محامٍ ومستشار</span></div>
-    <div><b>٩,٢٤٠</b><span>استشارة قانونية</span></div>
-    <div><b>٢٤/٧</b><span>متابعة القضايا العاجلة</span></div>
+  <div class="container grid-4" data-list="home.band">
+    <div><b data-field="value">٩٩٪</b><span data-field="label">رضا العملاء</span></div>
+    <div><b data-field="value">٤٢+</b><span data-field="label">محامٍ ومستشار</span></div>
+    <div><b data-field="value">٩,٢٤٠</b><span data-field="label">استشارة قانونية</span></div>
+    <div><b data-field="value">٢٤/٧</b><span data-field="label">متابعة القضايا العاجلة</span></div>
   </div>
 </div>
 
@@ -192,29 +192,29 @@
       <div class="eyebrow">آراء عملائنا</div>
       <h2>ثقة بُنيت على نتائج حقيقية</h2>
     </div>
-    <div class="grid grid-3">
+    <div class="grid grid-3" data-list="home.testimonials">
       <div class="quote-card">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h4v4c0 3-2 5-4 6l-1-2c1.5-1 2-2 2-3H7V7zm8 0h4v4c0 3-2 5-4 6l-1-2c1.5-1 2-2 2-3h-1V7z"/></svg>
-        <p>تعاملت مع المكتب في نزاع عقاري معقد، وكانت المتابعة دقيقة والنتيجة أفضل مما توقعت.</p>
+        <p data-field="text">تعاملت مع المكتب في نزاع عقاري معقد، وكانت المتابعة دقيقة والنتيجة أفضل مما توقعت.</p>
         <div class="quote-who">
-          <div class="avatar">م</div>
-          <div><b>مدير شركة</b><span>عميل قطاع الأعمال</span></div>
+          <div class="avatar" data-avatar-from="name">م</div>
+          <div><b data-field="name">مدير شركة</b><span data-field="role">عميل قطاع الأعمال</span></div>
         </div>
       </div>
       <div class="quote-card">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h4v4c0 3-2 5-4 6l-1-2c1.5-1 2-2 2-3H7V7zm8 0h4v4c0 3-2 5-4 6l-1-2c1.5-1 2-2 2-3h-1V7z"/></svg>
-        <p>وضوح المكتب معايا فى كل خطوة وسهولة التواصل كانوا أكتر حاجة طمنتني وأنا في قضية حساسة.</p>
+        <p data-field="text">وضوح المكتب معايا فى كل خطوة وسهولة التواصل كانوا أكتر حاجة طمنتني وأنا في قضية حساسة.</p>
         <div class="quote-who">
-          <div class="avatar">س</div>
-          <div><b>سارة عادل</b><span>قضية أحوال شخصية</span></div>
+          <div class="avatar" data-avatar-from="name">س</div>
+          <div><b data-field="name">سارة عادل</b><span data-field="role">قضية أحوال شخصية</span></div>
         </div>
       </div>
       <div class="quote-card">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h4v4c0 3-2 5-4 6l-1-2c1.5-1 2-2 2-3H7V7zm8 0h4v4c0 3-2 5-4 6l-1-2c1.5-1 2-2 2-3h-1V7z"/></svg>
-        <p>ساعدونا فى صياغة عقود التأسيس واستخراج التراخيص بسرعة واحترافية لافتة.</p>
+        <p data-field="text">ساعدونا فى صياغة عقود التأسيس واستخراج التراخيص بسرعة واحترافية لافتة.</p>
         <div class="quote-who">
-          <div class="avatar">ك</div>
-          <div><b>كريم فتحي</b><span>مؤسس شركة ناشئة</span></div>
+          <div class="avatar" data-avatar-from="name">ك</div>
+          <div><b data-field="name">كريم فتحي</b><span data-field="role">مؤسس شركة ناشئة</span></div>
         </div>
       </div>
     </div>
@@ -226,8 +226,8 @@
   <div class="container">
     <div class="cta">
       <div>
-        <h2>محتاج استشارة قانونية سريعة؟</h2>
-        <p>احجز موعدك الآن واحصل على تقييم أولي لموقفك القانوني خلال ٢٤ ساعة.</p>
+        <h2 data-field="home.cta.title">محتاج استشارة قانونية سريعة؟</h2>
+        <p data-field="home.cta.text">احجز موعدك الآن واحصل على تقييم أولي لموقفك القانوني خلال ٢٤ ساعة.</p>
       </div>
       <a href="contact.html" class="btn btn-gold">تواصل معنا</a>
     </div>
@@ -243,9 +243,9 @@
           <circle class="ring" cx="50" cy="50" r="46" stroke-width="1.5"/>
           <path d="M50 30 L50 62 M38 40 L50 30 L62 40 M32 46 h12 M56 46 h12" fill="none" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/>
         </svg>
-        <strong style="color:#fff">أفق العدالة</strong>
+        <strong style="color:#fff" data-field="brand.name">أفق العدالة</strong>
       </a>
-      <p>مكتب محاماة واستشارات قانونية شاملة يخدم الأفراد والشركات داخل جمهورية مصر العربية.</p>
+      <p data-field="footer.about">مكتب محاماة واستشارات قانونية شاملة يخدم الأفراد والشركات داخل جمهورية مصر العربية.</p>
       <div class="social-row" aria-label="روابط التواصل الاجتماعي">
         <a href="#" aria-label="فيسبوك"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12z"/></svg></a>
         <a href="#" aria-label="لينكد إن"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-1 1.83-2 3.77-2 4.03 0 4.78 2.65 4.78 6.1V21h-4v-5.4c0-1.3 0-3-1.83-3-1.83 0-2.1 1.4-2.1 2.9V21H9z"/></svg></a>
@@ -264,28 +264,28 @@
     <div>
       <h4>خدماتنا</h4>
       <ul>
-        <li><a href="services.html#consulting">استشارات قانونية</a></li>
-        <li><a href="services.html#contracts">صياغة العقود</a></li>
-        <li><a href="services.html#companies">تأسيس الشركات</a></li>
-        <li><a href="services.html#family">الأحوال الشخصية</a></li>
+        <li><a href="services.html">كل الخدمات</a></li>
+        <li><a href="about.html">من نحن</a></li>
+        <li><a href="blog.html">المدونة القانونية</a></li>
       </ul>
     </div>
     <div>
       <h4>تواصل معنا</h4>
       <ul>
-        <li>القاهرة، جمهورية مصر العربية</li>
-        <li><a href="tel:+201000000000">٠١٠٠٠ ٠٠٠ ٠٠٠</a></li>
-        <li><a href="mailto:info@ofoq-justice.example">info@ofoq-justice.example</a></li>
+        <li data-field="info.address">القاهرة، جمهورية مصر العربية</li>
+        <li><a href="tel:+201000000000" data-field="info.phone" data-field-href="info.phoneRaw" data-href-prefix="tel:">٠١٠٠٠ ٠٠٠ ٠٠٠</a></li>
+        <li><a href="mailto:info@ofoq-justice.example" data-field="info.email" data-field-href="info.email" data-href-prefix="mailto:">info@ofoq-justice.example</a></li>
       </ul>
     </div>
   </div>
   <div class="container footer-bottom">
-    <span>© <span id="year"></span> مكتب أفق العدالة للمحاماة. جميع الحقوق محفوظة.</span>
-    <span>هذا الموقع نموذج تصميم — استبدل البيانات ببيانات مكتبك الفعلية.</span>
+    <span>© <span id="year"></span> مكتب <span data-field="brand.name">أفق العدالة</span> للمحاماة. جميع الحقوق محفوظة.</span>
+    <span data-field="footer.note">هذا الموقع نموذج تصميم — استبدل البيانات ببيانات مكتبك الفعلية.</span>
   </div>
 </footer>
 
 <script type="module" src="firebase-config.js"></script>
+<script src="content-loader.js" defer></script>
 <script src="main.js" defer></script>
 </body>
 </html>

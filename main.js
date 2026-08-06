@@ -22,22 +22,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-  // أكورديون الأسئلة الشائعة
-  document.querySelectorAll(".faq-item").forEach((item) => {
-    const q = item.querySelector(".faq-q");
+  // أكورديون الأسئلة الشائعة — تفويض أحداث (event delegation) عشان
+  // يفضل شغال حتى لو المحتوى اتبدّل ديناميكيًا من لوحة التحكم بعد تحميل الصفحة
+  document.addEventListener("click", (e) => {
+    const q = e.target.closest(".faq-q");
+    if (!q) return;
+    const item = q.closest(".faq-item");
     const a = item.querySelector(".faq-a");
-    if (!q || !a) return;
-    q.addEventListener("click", () => {
-      const isOpen = item.classList.contains("open");
-      document.querySelectorAll(".faq-item.open").forEach((openItem) => {
-        if (openItem !== item) {
-          openItem.classList.remove("open");
-          openItem.querySelector(".faq-a").style.maxHeight = null;
-        }
-      });
-      item.classList.toggle("open", !isOpen);
-      a.style.maxHeight = !isOpen ? a.scrollHeight + "px" : null;
+    if (!item || !a) return;
+    const isOpen = item.classList.contains("open");
+    document.querySelectorAll(".faq-item.open").forEach((openItem) => {
+      if (openItem !== item) {
+        openItem.classList.remove("open");
+        openItem.querySelector(".faq-a").style.maxHeight = null;
+      }
     });
+    item.classList.toggle("open", !isOpen);
+    a.style.maxHeight = !isOpen ? a.scrollHeight + "px" : null;
   });
 
   initContactForm();
