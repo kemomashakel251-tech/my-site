@@ -64,6 +64,7 @@ function initContactForm() {
       name: form.name.value.trim(),
       phone: form.phone.value.trim(),
       email: form.email.value.trim(),
+      address: form.address.value.trim(),
       subject: form.subject.value,
       message: form.message.value.trim(),
       createdAt: new Date().toISOString(),

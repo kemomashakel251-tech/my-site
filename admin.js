@@ -342,6 +342,7 @@ function buildMessageCard(id, m, onDeleted) {
   const meta = el("div", { class: "message-meta" });
   if (m.phone) meta.appendChild(el("a", { href: "tel:" + m.phone, text: "📞 " + m.phone }));
   if (m.email) meta.appendChild(el("a", { href: "mailto:" + m.email, text: "✉️ " + m.email }));
+  if (m.address) meta.appendChild(el("span", { text: "📍 " + m.address }));
   if (m.subject) meta.appendChild(el("span", { class: "message-subject", text: m.subject }));
   card.appendChild(meta);
 
