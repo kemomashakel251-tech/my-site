@@ -19,6 +19,10 @@ import {
   doc,
   getDoc,
   setDoc,
+  query,
+  orderBy,
+  getDocs,
+  deleteDoc,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
   getAuth,
@@ -41,7 +45,7 @@ const firebaseConfig = {
 try {
   const app = initializeApp(firebaseConfig);
   window.firebaseDB = getFirestore(app);
-  window.firestoreFns = { collection, addDoc, doc, getDoc, setDoc };
+  window.firestoreFns = { collection, addDoc, doc, getDoc, setDoc, query, orderBy, getDocs, deleteDoc };
   window.firebaseAuth = getAuth(app);
   window.authFns = { signInWithEmailAndPassword, onAuthStateChanged, signOut };
   window.dispatchEvent(new Event("firebase-ready"));

@@ -15,7 +15,7 @@ const DEFAULT_CONTENT = {"brand": {"name": "أفق العدالة", "tagline": "
 
 // ---------- أقسام النصوص الثابتة (تعديل بس) ----------
 const SCALAR_SECTIONS = [
-  { key: "brand-contact", tab: "عام", title: "الهوية وبيانات التواصل", badge: "تظهر في كل الصفحات", fields: [
+  { key: "brand-contact", tab: "اتصل بنا", title: "الهوية وبيانات التواصل", badge: "تظهر في كل الصفحات", fields: [
     { path: "brand.name", label: "اسم المكتب" },
     { path: "brand.tagline", label: "الوصف تحت الاسم" },
     { path: "info.phone", label: "رقم الهاتف (شكل العرض)" },
@@ -101,7 +101,7 @@ const LIST_SECTIONS = [
     itemFields: [{ key: "label", label: "الخيار" }] },
 ];
 
-const TAB_ORDER = ["عام", "الرئيسية", "من نحن", "خدماتنا", "المدونة", "اتصل بنا"];
+const TAB_ORDER = ["الرسائل الواردة", "عام", "الرئيسية", "من نحن", "خدماتنا", "المدونة", "اتصل بنا"];
 
 // ---------- أدوات مساعدة ----------
 function getNested(obj, path) {
@@ -272,6 +272,102 @@ function buildListSection(section) {
   return wrap;
 }
 
+// ---------- تاب الرسائل الواردة (نموذج التواصل) ----------
+function formatMsgDate(iso) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString("ar-EG", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  } catch (e) {
+    return iso || "";
+  }
+}
+
+function buildMessagesPanel() {
+  const wrap = el("div", { class: "admin-section" });
+  wrap.appendChild(el("h2", {}, [
+    document.createTextNode("الرسائل الواردة من نموذج \"اتصل بنا\" "),
+    el("span", { class: "badge", text: "contact.html" }),
+  ]));
+
+  const toolbar = el("div", { class: "save-row", style: "margin-top:0; margin-bottom:16px;" });
+  const refreshBtn = el("button", { type: "button", class: "btn btn-outline-dark", text: "تحديث القائمة" });
+  const status = el("span", { class: "save-status" });
+  toolbar.appendChild(refreshBtn);
+  toolbar.appendChild(status);
+  wrap.appendChild(toolbar);
+
+  const listEl = el("div", { class: "messages-list" });
+  wrap.appendChild(listEl);
+
+  async function loadMessages() {
+    status.textContent = "جارٍ التحميل...";
+    status.className = "save-status";
+    listEl.innerHTML = "";
+    try {
+      const { collection, query, orderBy, getDocs } = window.firestoreFns;
+      const q = query(collection(window.firebaseDB, "messages"), orderBy("createdAt", "desc"));
+      const snap = await getDocs(q);
+      if (snap.empty) {
+        listEl.appendChild(el("p", { class: "empty-hint", text: "لسه مفيش رسائل واردة." }));
+        status.textContent = "";
+        return;
+      }
+      snap.forEach((docSnap) => {
+        const m = docSnap.data();
+        listEl.appendChild(buildMessageCard(docSnap.id, m, loadMessages));
+      });
+      status.textContent = "✓ " + snap.size + " رسالة";
+      status.className = "save-status ok";
+    } catch (err) {
+      console.error(err);
+      status.textContent = "تعذر تحميل الرسائل — تأكد إنك مسجل دخول وقواعد Firestore منشورة.";
+      status.className = "save-status err";
+    }
+  }
+
+  refreshBtn.addEventListener("click", loadMessages);
+  loadMessages();
+
+  return wrap;
+}
+
+function buildMessageCard(id, m, onDeleted) {
+  const card = el("div", { class: "message-card" });
+
+  const head = el("div", { class: "message-head" });
+  head.appendChild(el("b", { text: m.name || "بدون اسم" }));
+  head.appendChild(el("span", { class: "message-date", text: formatMsgDate(m.createdAt) }));
+  card.appendChild(head);
+
+  const meta = el("div", { class: "message-meta" });
+  if (m.phone) meta.appendChild(el("a", { href: "tel:" + m.phone, text: "📞 " + m.phone }));
+  if (m.email) meta.appendChild(el("a", { href: "mailto:" + m.email, text: "✉️ " + m.email }));
+  if (m.subject) meta.appendChild(el("span", { class: "message-subject", text: m.subject }));
+  card.appendChild(meta);
+
+  card.appendChild(el("p", { class: "message-body", text: m.message || "" }));
+
+  const delBtn = el("button", { type: "button", class: "icon-btn danger", title: "حذف الرسالة", text: "✕ حذف" });
+  delBtn.style.width = "auto";
+  delBtn.style.borderRadius = "999px";
+  delBtn.style.padding = "6px 14px";
+  delBtn.style.fontSize = ".78rem";
+  delBtn.addEventListener("click", async () => {
+    if (!confirm("متأكد إنك عايز تحذف الرسالة دي؟")) return;
+    try {
+      const { doc, deleteDoc } = window.firestoreFns;
+      await deleteDoc(doc(window.firebaseDB, "messages", id));
+      onDeleted();
+    } catch (err) {
+      console.error(err);
+      alert("تعذر حذف الرسالة.");
+    }
+  });
+  card.appendChild(delBtn);
+
+  return card;
+}
+
 // ---------- بناء التابات والصفحات ----------
 function buildDashboard() {
   const tabsEl = document.getElementById("admin-tabs");
@@ -283,6 +379,7 @@ function buildDashboard() {
   TAB_ORDER.forEach((t) => (byTab[t] = []));
   SCALAR_SECTIONS.forEach((s) => (byTab[s.tab] = byTab[s.tab] || []).push({ type: "scalar", section: s }));
   LIST_SECTIONS.forEach((s) => (byTab[s.tab] = byTab[s.tab] || []).push({ type: "list", section: s }));
+  byTab["الرسائل الواردة"].push({ type: "messages" });
 
   let first = true;
   TAB_ORDER.forEach((tabName) => {
@@ -293,7 +390,11 @@ function buildDashboard() {
     const panel = el("div", { class: "admin-panel" + (first ? " active" : "") });
 
     items.forEach((it) => {
-      panel.appendChild(it.type === "scalar" ? buildScalarSection(it.section) : buildListSection(it.section));
+      let node;
+      if (it.type === "scalar") node = buildScalarSection(it.section);
+      else if (it.type === "list") node = buildListSection(it.section);
+      else node = buildMessagesPanel();
+      panel.appendChild(node);
     });
 
     btn.addEventListener("click", () => {
